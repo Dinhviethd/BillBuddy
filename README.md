@@ -32,10 +32,16 @@ Based on the core functionalities, BillBuddy provides a comprehensive suite of t
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 To get a local copy up and running, follow these simple steps:
 
 1. **Clone the repository:**
    ```bash
    git clone [https://github.com/your-username/BillBuddy.git](https://github.com/your-username/BillBuddy.git)
+
+---
+
+## Team
+Developer: Viet, Khanh, An, Hao, Nhan
+Project: BillBuddy

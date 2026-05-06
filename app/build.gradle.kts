@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
+    id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -54,6 +56,13 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.googleid)
     implementation("com.google.mlkit:text-recognition:16.0.1")
+    implementation("com.google.dagger:hilt-android:2.59.2")
+    ksp("com.google.dagger:hilt-android-compiler:2.59.2")
+    
+    // Navigation
+    implementation("androidx.navigation:navigation-compose:2.8.5")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

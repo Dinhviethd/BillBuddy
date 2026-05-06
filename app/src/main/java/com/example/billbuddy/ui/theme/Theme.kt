@@ -9,35 +9,107 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+private val LightColorScheme = lightColorScheme(
+    // Primary
+    primary          = AmberDark,
+    onPrimary        = Color.White,
+
+    primaryContainer = LightAmber,
+    onPrimaryContainer = Color(0xFF3D1A00),
+
+    // Secondary
+    secondary        = Color(0xFFB45309),
+    onSecondary      = Color.White,
+
+    secondaryContainer = Beige,
+    onSecondaryContainer = Color(0xFF3D2600),
+
+    // Background & Surface
+    background       = AppBackground,
+    onBackground     = PrimaryText,
+
+    surface          = CardSurface,
+    onSurface        = PrimaryText,
+
+    surfaceVariant   = Beige,
+    onSurfaceVariant = Color(0xFF4A3F00),
+
+    // Outline
+    outline          = OutlineColor,
+    outlineVariant   = LightAmber,
+
+    // Error / Tertiary
+    error            = ErrorRed,
+    onError          = Color.White,
+    errorContainer   = Color(0xFFFFEDED),
+    onErrorContainer = Color(0xFF7F1111),
+
+    tertiary         = SuccessGreen,
+    onTertiary       = Color.White,
+    tertiaryContainer = Color(0xFFDCFCE7),
+    onTertiaryContainer = Color(0xFF14532D),
+
+    // Scrim / Inverse
+    scrim            = Color(0x99000000),
+    inverseSurface   = Color(0xFF2C2820),
+    inverseOnSurface = OnDarkText,
+    inversePrimary   = AmberOnDark,
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+private val DarkColorScheme = darkColorScheme(
+    // Primary
+    primary          = AmberOnDark,
+    onPrimary        = Color(0xFF3D1A00),
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primaryContainer = Color(0xFF5C3A00),
+    onPrimaryContainer = LightAmber,
+
+    // Secondary
+    secondary        = AmberOnDark,
+    onSecondary      = Color(0xFF3D1A00),
+
+    secondaryContainer = Color(0xFF3A3000),
+    onSecondaryContainer = Beige,
+
+    // Background & Surface
+    background       = DarkBackground,
+    onBackground     = OnDarkText,
+
+    surface          = DarkSurface,
+    onSurface        = OnDarkText,
+
+    surfaceVariant   = DarkSurface2,
+    onSurfaceVariant = OnDarkMuted,
+
+    // Outline
+    outline          = Color(0xFF6B5E3A),
+    outlineVariant   = Color(0xFF3A3426),
+
+    // Error / Tertiary
+    error            = Color(0xFFFF6B6B),
+    onError          = Color(0xFF690000),
+    errorContainer   = Color(0xFF93000A),
+    onErrorContainer = Color(0xFFFFDAD6),
+
+    tertiary         = Color(0xFF4ADE80),
+    onTertiary       = Color(0xFF003912),
+    tertiaryContainer = Color(0xFF00531A),
+    onTertiaryContainer = Color(0xFFB7F5C8),
+
+    // Scrim / Inverse
+    scrim            = Color(0x99000000),
+    inverseSurface   = AppBackground,
+    inverseOnSurface = PrimaryText,
+    inversePrimary   = AmberDark,
 )
 
 @Composable
 fun BillBuddyTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -45,14 +117,13 @@ fun BillBuddyTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
         darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        else      -> LightColorScheme
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
-        content = content
+        typography  = Typography,
+        content     = content
     )
 }

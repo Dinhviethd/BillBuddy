@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "509698485067",
+    "firebase_url": "https://billbuddy-fabf2-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "billbuddy-fabf2",
+    "storage_bucket": "billbuddy-fabf2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:509698485067:android:c2d7d00ad1850bc90e56ce",
+        "android_client_info": {
+          "package_name": "com.example.billbuddy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaZ1jpzXvx2tAoNeiL-1Bbj0GhOEbr4Ec"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

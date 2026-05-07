@@ -1,14 +1,13 @@
 package com.example.billbuddy.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.window.Popup
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.billbuddy.ui.screens.auth.LoginScreen
 import com.example.billbuddy.ui.screens.auth.RegisterScreen
+import com.example.billbuddy.ui.screens.home.AddExpenseScreen
 import com.example.billbuddy.ui.screens.home.HomeScreen
 import com.example.billbuddy.ui.viewmodel.AuthViewModel
 
@@ -51,12 +50,24 @@ fun NavGraph(navController: NavHostController) {
         composable(Screen.Home.route) {
             HomeScreen(
                 viewModel = authViewModel,
-                onLogout = {
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(Screen.Home.route) { inclusive = true }
-                    }
+                onNavigateToAddExpense = { navController.navigate(Screen.AddExpense.route) },
+                onNavigateToCalendar = { navController.navigate(Screen.Calendar.route) },
+                onNavigateToStatistics = { navController.navigate(Screen.Statistics.route) },
+                onNavigateToProfile = { navController.navigate(Screen.Profile.route) }
+            )
+        }
+        
+        composable(Screen.AddExpense.route) {
+            AddExpenseScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onSaveExpense = { date, category, amount, note ->
+                    navController.popBackStack()
                 }
             )
         }
+        
+        composable(Screen.Calendar.route) {  }
+        composable(Screen.Statistics.route) {  }
+        composable(Screen.Profile.route) {  }
     }
 }

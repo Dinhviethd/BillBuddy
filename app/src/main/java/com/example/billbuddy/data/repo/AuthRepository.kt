@@ -9,4 +9,6 @@ interface AuthRepository {
     fun login(email: String, password: String): Flow<Resource<FirebaseUser>>
     fun register(email:String, password: String): Flow<Resource<FirebaseUser>>
     fun logout()
+    fun updateUserProfile(user: com.example.billbuddy.data.model.User): Flow<Resource<Unit>>
+    fun getUserData(uid: String): Flow<Resource<com.example.billbuddy.data.model.User>>
 }

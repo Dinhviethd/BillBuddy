@@ -3,6 +3,7 @@ package com.example.billbuddy.ui.screens.auth
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import android.util.Patterns
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -120,8 +121,10 @@ fun RegisterScreen(
             Button(
                 onClick = {
                     when {
-                        password != confirmPass -> errorText = "Passwords do not match"
-                        password.length < 6 -> errorText = "Password must be at least 6 characters"
+                        email.isBlank() -> errorText = "Email không được để trống"
+                        !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> errorText = "Email không hợp lệ"
+                        password != confirmPass -> errorText = "Mật khẩu không khớp"
+                        password.length < 6 -> errorText = "Mật khẩu phải có ít nhất 6 ký tự"
                         else -> {
                             errorText = null
                             viewModel.register(email, password)

@@ -1,13 +1,11 @@
 package com.example.billbuddy.ui.screens.calendar
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -18,7 +16,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.billbuddy.ui.screens.home.BottomNavItem
+import com.example.billbuddy.navigation.Screen
+import com.example.billbuddy.ui.components.AppBottomNavigation
 import com.example.billbuddy.ui.theme.AppBackground
 import com.example.billbuddy.ui.theme.LightAmber
 
@@ -109,48 +108,14 @@ fun CalendarScreen(
         floatingActionButtonPosition = FabPosition.Center,
 
         bottomBar = {
-
-            BottomAppBar(
-                containerColor = Color.White
-            ) {
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    BottomNavItem(
-                        icon = Icons.AutoMirrored.Filled.ShowChart,
-                        label = "Trang chủ",
-                        isSelected = false,
-                        onClick = onNavigateHome
-                    )
-
-                    BottomNavItem(
-                        icon = Icons.Default.DateRange,
-                        label = "Lịch",
-                        isSelected = true,
-                        onClick = {}
-                    )
-
-                    Spacer(modifier = Modifier.width(48.dp))
-
-                    BottomNavItem(
-                        icon = Icons.Default.PieChart,
-                        label = "Thống kê",
-                        isSelected = false,
-                        onClick = onNavigateStatistics
-                    )
-
-                    BottomNavItem(
-                        icon = Icons.Default.Person,
-                        label = "Cá nhân",
-                        isSelected = false,
-                        onClick = onNavigateProfile
-                    )
-                }
-            }
+            AppBottomNavigation(
+                currentRoute = Screen.Calendar.route,
+                onHomeClick = onNavigateHome,
+                onCalendarClick = {},
+                onAddClick = onNavigateAddExpense,
+                onStatsClick = onNavigateStatistics,
+                onProfileClick = onNavigateProfile
+            )
         },
 
         containerColor = AppBackground

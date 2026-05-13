@@ -1,4 +1,4 @@
-package com.example.billbuddy.ui.screens.home
+package com.example.billbuddy.ui.screens.expense
 
 import android.app.DatePickerDialog
 import androidx.compose.foundation.background

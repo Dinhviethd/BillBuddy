@@ -14,13 +14,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.billbuddy.navigation.Screen
+import com.example.billbuddy.ui.components.AppBottomNavigation
+import com.example.billbuddy.ui.components.StatisticsInfoBox
 import com.example.billbuddy.ui.viewmodel.AuthViewModel
 
 data class CategoryExpense(
@@ -43,9 +45,24 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit
 ) {
     Scaffold(
-        topBar = { HomeTopBar() },
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "Sổ Thu Chi",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                actions = {
+                    IconButton(onClick = { }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "More")
+                    }
+                }
+            )
+        },
         bottomBar = {
-            HomeBottomNavigation(
+            AppBottomNavigation(
+                currentRoute = Screen.Home.route,
                 onHomeClick = {},
                 onCalendarClick = onNavigateToCalendar,
                 onAddClick = onNavigateToAddExpense,
@@ -75,6 +92,9 @@ fun HomeScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            item {
+                HomeStatsHeader()
+            }
 
             item {
                 Row(
@@ -128,52 +148,32 @@ fun HomeScreen(
 }
 
 @Composable
-fun HomeTopBar() {
+fun HomeStatsHeader() {
     Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp)),
         color = Color(0xFF212121),
         contentColor = Color.White
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Icon(Icons.Default.Menu, contentDescription = "Menu")
-                Text(
-                    text = "Sổ Thu Chi",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                )
-                Row {
-                    Icon(Icons.Default.Search, contentDescription = "Search")
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Icon(Icons.Default.CalendarMonth, contentDescription = "Calendar")
+            Column {
+                Text("2026", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Thg 5", style = MaterialTheme.typography.titleLarge)
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
-            ) {
-                Column {
-                    Text("2026", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Thg 5", style = MaterialTheme.typography.titleLarge)
-                        Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                    }
-                }
-
-                HeaderStat(label = "Chi tiêu", value = "1.271.533")
-                HeaderStat(label = "Thu nhập", value = "24.313")
-                HeaderStat(label = "Số dư", value = "-1.247.220")
-            }
+            HeaderStat(label = "Chi tiêu", value = "1.271.533")
+            HeaderStat(label = "Thu nhập", value = "24.313")
+            HeaderStat(label = "Số dư", value = "-1.247.220")
         }
     }
 }
@@ -301,68 +301,5 @@ fun OverviewRow(icon: ImageVector, label: String, amount: String, color: Color) 
             Text(label, color = Color.Gray)
         }
         Text(amount, color = color, fontWeight = FontWeight.Medium)
-    }
-}
-
-@Composable
-fun StatisticsInfoBox() {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        color = Color(0xFFE3F2FD)
-    ) {
-        Row(modifier = Modifier.padding(12.dp)) {
-            Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF1976D2))
-            Spacer(modifier = Modifier.width(8.dp))
-            Column {
-                Text("Thống kê", fontWeight = FontWeight.Bold, color = Color(0xFF1976D2))
-                Text(
-                    "Bạn đã tiết kiệm được 42% so với mục tiêu chi tiêu tháng này",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.DarkGray
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun HomeBottomNavigation(
-    onHomeClick: () -> Unit,
-    onCalendarClick: () -> Unit,
-    onAddClick: () -> Unit,
-    onStatsClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-    BottomAppBar(
-        containerColor = Color.White,
-        tonalElevation = 8.dp,
-        actions = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                BottomNavItem(Icons.AutoMirrored.Filled.ShowChart, "Trang chủ", true, onHomeClick)
-                BottomNavItem(Icons.Default.DateRange, "Lịch", false, onCalendarClick)
-
-                Spacer(modifier = Modifier.width(48.dp))
-                
-                BottomNavItem(Icons.Default.PieChart, "Thống kê", false, onStatsClick)
-                BottomNavItem(Icons.Default.Person, "Cá nhân", false, onProfileClick)
-            }
-        }
-    )
-}
-
-@Composable
-fun BottomNavItem(icon: ImageVector, label: String, isSelected: Boolean, onClick: () -> Unit) {
-    val color = if (isSelected) Color(0xFFD47500) else Color.Gray
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable { onClick() }
-    ) {
-        Icon(icon, contentDescription = label, tint = color)
-        Text(label, style = MaterialTheme.typography.labelSmall, color = color)
     }
 }

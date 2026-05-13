@@ -1,0 +1,79 @@
+package com.example.billbuddy.ui.viewmodel
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.billbuddy.data.model.Expense
+import com.example.billbuddy.data.repo.ExpenseRepository
+import com.example.billbuddy.utils.Resource
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import javax.inject.Inject
+
+data class ExpenseUiState(
+    val isLoading: Boolean = false,
+    val expenses: List<Expense> = emptyList(),
+    val errorMessage: String? = null
+)
+
+@HiltViewModel
+class ExpenseViewModel @Inject constructor(
+    private val expenseRepository: ExpenseRepository
+) : ViewModel() {
+
+    private val _expenseState = MutableStateFlow(ExpenseUiState())
+    val expenseState: StateFlow<ExpenseUiState> = _expenseState.asStateFlow()
+
+    private val _saveState = MutableStateFlow<Resource<Unit>?>(null)
+    val saveState: StateFlow<Resource<Unit>?> = _saveState.asStateFlow()
+
+    init {
+        observeExpenses()
+    }
+
+    fun addExpense(date: String, category: String, amount: Double, note: String) {
+        val expense = Expense(
+            date = date,
+            category = category,
+            amount = amount,
+            note = note,
+            createdAt = System.currentTimeMillis()
+        )
+
+        expenseRepository.addExpense(expense).onEach { result ->
+            _saveState.value = result
+        }.launchIn(viewModelScope)
+    }
+
+    fun clearSaveState() {
+        _saveState.value = null
+    }
+
+    private fun observeExpenses() {
+        expenseRepository.observeExpenses().onEach { result ->
+            when (result) {
+                is Resource.Loading -> {
+                    _expenseState.value = _expenseState.value.copy(isLoading = true, errorMessage = null)
+                }
+                is Resource.Success -> {
+                    _expenseState.value = ExpenseUiState(
+                        isLoading = false,
+                        expenses = result.data.orEmpty(),
+                        errorMessage = null
+                    )
+                }
+                is Resource.Error -> {
+                    _expenseState.value = ExpenseUiState(
+                        isLoading = false,
+                        expenses = result.data.orEmpty(),
+                        errorMessage = result.message
+                    )
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+}
+

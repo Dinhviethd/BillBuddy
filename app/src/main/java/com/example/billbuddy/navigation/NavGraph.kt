@@ -1,5 +1,7 @@
 package com.example.billbuddy.navigation
 
+import android.os.Build
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -9,6 +11,7 @@ import com.example.billbuddy.ui.screens.auth.LoginScreen
 import com.example.billbuddy.ui.screens.auth.RegisterScreen
 import com.example.billbuddy.ui.screens.home.AddExpenseScreen
 import com.example.billbuddy.ui.screens.home.HomeScreen
+import com.example.billbuddy.ui.screens.statistics.StatisticsScreen
 import com.example.billbuddy.ui.viewmodel.AuthViewModel
 import com.example.billbuddy.ui.screens.calendar.CalendarScreen
 @Composable
@@ -88,7 +91,13 @@ fun NavGraph(navController: NavHostController) {
                 }
             )
         }
-        composable(Screen.Statistics.route) {  }
+        composable(Screen.Statistics.route) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                StatisticsScreen()
+            } else {
+                Text("Thiet bi nay chua ho tro man hinh thong ke")
+            }
+        }
         composable(Screen.Profile.route) {  }
     }
 }

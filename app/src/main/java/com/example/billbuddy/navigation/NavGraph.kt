@@ -13,6 +13,8 @@ import com.example.billbuddy.ui.screens.statistics.StatisticsScreen
 import com.example.billbuddy.ui.screens.settings.ProfileScreen
 import com.example.billbuddy.ui.screens.settings.EditProfileScreen
 import com.example.billbuddy.ui.screens.calendar.CalendarScreen
+import com.example.billbuddy.ui.screens.debt.DebtListScreen
+import com.example.billbuddy.ui.screens.group.GroupListScreen
 import com.example.billbuddy.ui.viewmodel.AuthViewModel
 
 @Composable
@@ -121,6 +123,12 @@ fun NavGraph(navController: NavHostController) {
                 onNavigateToEditProfile = {
                     navController.navigate(Screen.EditProfile.route)
                 },
+                onNavigateToGroups = {
+                    navController.navigate(Screen.GroupList.route)
+                },
+                onNavigateToDebts = {
+                    navController.navigate(Screen.DebtList.route)
+                },
                 onSignOut = {
                     authViewModel.logout()
                     navController.navigate(Screen.Login.route) {
@@ -133,6 +141,22 @@ fun NavGraph(navController: NavHostController) {
             EditProfileScreen(
                 viewModel = authViewModel,
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.GroupList.route) {
+            GroupListScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToAddGroup = {
+                    // navController.navigate(Screen.AddGroup.route)
+                }
+            )
+        }
+        composable(Screen.DebtList.route) {
+            DebtListScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToAddDebt = {
+                    // navController.navigate(Screen.AddDebt.route)
+                }
             )
         }
     }

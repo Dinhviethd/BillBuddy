@@ -30,6 +30,7 @@ class AuthViewModel @Inject constructor(
     init {
         currentUser?.let { 
             getUserData(it.uid)
+            com.example.billbuddy.data.seed.SeedData.seedForUser(it)
         }
     }
 
@@ -57,6 +58,7 @@ class AuthViewModel @Inject constructor(
             if (result is Resource.Success) {
                 result.data?.let { user ->
                     getUserData(user.uid)
+                    com.example.billbuddy.data.seed.SeedData.seedForUser(user)
                 }
             }
         }.launchIn(viewModelScope)
@@ -67,6 +69,7 @@ class AuthViewModel @Inject constructor(
             if (result is Resource.Success) {
                 result.data?.let { user ->
                     getUserData(user.uid)
+                    com.example.billbuddy.data.seed.SeedData.seedForUser(user)
                 }
             }
         }.launchIn(viewModelScope)

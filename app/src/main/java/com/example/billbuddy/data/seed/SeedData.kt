@@ -3,31 +3,32 @@ package com.example.billbuddy.data.seed
 import android.util.Log
 import com.example.billbuddy.data.model.*
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 
 object SeedData {
     private const val TAG = "SeedData"
-    private const val SAMPLE_UID = "sample_user_id"
 
-    fun seedSampleData(force: Boolean = false) {
+    fun seedForUser(user: FirebaseUser, force: Boolean = false) {
+        val uid = user.uid
         val firestore = FirebaseFirestore.getInstance()
-        Log.d(TAG, "=== BẮT ĐẦU SEED DATA (force=$force) ===")
+        Log.d(TAG, "=== BẮT ĐẦU SEED DATA CHO USER: $uid (force=$force) ===")
 
-        // 1. Khởi tạo tài liệu User mẫu trong Firestore
-        val usersRef = firestore.collection("users").document(SAMPLE_UID)
+        // 1. Khởi tạo tài liệu User trong Firestore
+        val usersRef = firestore.collection("users").document(uid)
         usersRef.get()
             .addOnSuccessListener { doc ->
                 Log.d(TAG, "[User] GET thành công, exists=${doc.exists()}")
                 if (!doc.exists() || force) {
                     val userModel = User(
-                        documentId = SAMPLE_UID,
-                        email = "sample@billbuddy.com",
-                        displayName = "Người dùng Mẫu",
+                        documentId = uid,
+                        email = user.email ?: "",
+                        displayName = user.displayName ?: "Người dùng mới",
                         createdAt = Timestamp.now(),
                         updatedAt = Timestamp.now()
                     )
                     usersRef.set(userModel)
-                        .addOnSuccessListener { Log.d(TAG, "[User] SET thành công - Đã khởi tạo thông tin người dùng mẫu") }
+                        .addOnSuccessListener { Log.d(TAG, "[User] SET thành công - Đã khởi tạo thông tin người dùng") }
                         .addOnFailureListener { e -> Log.e(TAG, "[User] SET THẤT BẠI: ${e.message}", e) }
                 }
             }
@@ -35,15 +36,15 @@ object SeedData {
 
         // 2. Khởi tạo Danh mục và các dữ liệu liên quan (Chi tiêu mẫu)
         val categoriesRef = firestore.collection("categories")
-        categoriesRef.whereEqualTo("userId", SAMPLE_UID).get()
+        categoriesRef.whereEqualTo("userId", uid).get()
             .addOnSuccessListener { snap ->
                 Log.d(TAG, "[Category] QUERY thành công, isEmpty=${snap.isEmpty}, size=${snap.size()}")
                 if (snap.isEmpty || force) {
                     val defaultCategories = listOf(
-                        Category(name = "Ăn uống", icon = "restaurant", color = "#FF7043", type = CategoryType.EXPENSE, userId = SAMPLE_UID),
-                        Category(name = "Di chuyển", icon = "directions_car", color = "#42A5F5", type = CategoryType.EXPENSE, userId = SAMPLE_UID),
-                        Category(name = "Mua sắm", icon = "shopping_bag", color = "#AB47BC", type = CategoryType.EXPENSE, userId = SAMPLE_UID),
-                        Category(name = "Lương", icon = "payments", color = "#66BB6A", type = CategoryType.INCOME, userId = SAMPLE_UID)
+                        Category(name = "Ăn uống", icon = "restaurant", color = "#FF7043", type = CategoryType.EXPENSE, userId = uid),
+                        Category(name = "Di chuyển", icon = "directions_car", color = "#42A5F5", type = CategoryType.EXPENSE, userId = uid),
+                        Category(name = "Mua sắm", icon = "shopping_bag", color = "#AB47BC", type = CategoryType.EXPENSE, userId = uid),
+                        Category(name = "Lương", icon = "payments", color = "#66BB6A", type = CategoryType.INCOME, userId = uid)
                     )
 
                     defaultCategories.forEach { category ->
@@ -53,7 +54,7 @@ object SeedData {
                                 Log.d(TAG, "[Category] ADD thành công: ${category.name}, id=${docRef.id}")
                                 // Nếu là danh mục Ăn uống, tạo thêm 1 chi tiêu mẫu để người dùng thấy ngay
                                 if (category.name == "Ăn uống") {
-                                    seedSampleExpense(firestore, SAMPLE_UID, docRef.id)
+                                    seedSampleExpense(firestore, uid, docRef.id)
                                 }
                             }
                             .addOnFailureListener { e -> Log.e(TAG, "[Category] ADD THẤT BẠI (${category.name}): ${e.message}", e) }
@@ -63,7 +64,7 @@ object SeedData {
             .addOnFailureListener { e -> Log.e(TAG, "[Category] QUERY THẤT BẠI: ${e.message}", e) }
 
         // 3. Khởi tạo các dữ liệu độc lập khác (Nhóm, Nợ)
-        seedIndependentData(firestore, SAMPLE_UID, force)
+        seedIndependentData(firestore, uid, force)
     }
 
     private fun seedSampleExpense(db: FirebaseFirestore, uid: String, categoryId: String) {

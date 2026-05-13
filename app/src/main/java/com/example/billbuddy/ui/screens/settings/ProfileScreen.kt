@@ -42,6 +42,8 @@ fun ProfileScreen(
     onNavigateToAddExpense: () -> Unit,
     onNavigateToStatistics: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
+    onNavigateToGroups: () -> Unit,
+    onNavigateToDebts: () -> Unit,
     onSignOut: () -> Unit
 ) {
     var showSignOutDialog by remember { mutableStateOf(false) }
@@ -106,14 +108,16 @@ fun ProfileScreen(
                         iconBgColor = Color(0xFFBBDEFB),
                         iconTint = Color(0xFF1976D2),
                         title = "Nhóm",
-                        subtitle = "Quản lý chi tiêu chung"
+                        subtitle = "Quản lý chi tiêu chung",
+                        onClick = onNavigateToGroups
                     ),
                     SettingItem(
                         icon = Icons.Default.ReceiptLong,
                         iconBgColor = Color(0xFFC8E6C9),
                         iconTint = Color(0xFF388E3C),
                         title = "Khoản nợ",
-                        subtitle = "Theo dõi nợ và cho vay"
+                        subtitle = "Theo dõi nợ và cho vay",
+                        onClick = onNavigateToDebts
                     ),
                     SettingItem(
                         icon = Icons.Default.LockReset,

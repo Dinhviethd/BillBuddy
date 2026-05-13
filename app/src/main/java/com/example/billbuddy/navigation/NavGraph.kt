@@ -10,12 +10,13 @@ import com.example.billbuddy.ui.screens.auth.RegisterScreen
 import com.example.billbuddy.ui.screens.home.AddExpenseScreen
 import com.example.billbuddy.ui.screens.home.HomeScreen
 import com.example.billbuddy.ui.viewmodel.AuthViewModel
-
+import com.example.billbuddy.ui.screens.calendar.CalendarScreen
 @Composable
 fun NavGraph(navController: NavHostController) {
     val authViewModel: AuthViewModel = hiltViewModel()
-    
-    val startDestination = if (authViewModel.currentUser != null) Screen.Home.route else Screen.Login.route
+
+    val startDestination = Screen.Calendar.route
+
 
     NavHost(
         navController = navController,
@@ -56,7 +57,7 @@ fun NavGraph(navController: NavHostController) {
                 onNavigateToProfile = { navController.navigate(Screen.Profile.route) }
             )
         }
-        
+
         composable(Screen.AddExpense.route) {
             AddExpenseScreen(
                 onNavigateBack = { navController.popBackStack() },
@@ -65,8 +66,28 @@ fun NavGraph(navController: NavHostController) {
                 }
             )
         }
-        
-        composable(Screen.Calendar.route) {  }
+
+        composable(Screen.Calendar.route) {
+
+            CalendarScreen(
+
+                onNavigateHome = {
+                    navController.navigate(Screen.Home.route)
+                },
+
+                onNavigateAddExpense = {
+                    navController.navigate(Screen.AddExpense.route)
+                },
+
+                onNavigateStatistics = {
+                    navController.navigate(Screen.Statistics.route)
+                },
+
+                onNavigateProfile = {
+                    navController.navigate(Screen.Profile.route)
+                }
+            )
+        }
         composable(Screen.Statistics.route) {  }
         composable(Screen.Profile.route) {  }
     }

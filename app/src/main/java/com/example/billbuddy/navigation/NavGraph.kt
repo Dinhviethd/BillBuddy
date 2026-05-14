@@ -10,12 +10,14 @@ import com.example.billbuddy.ui.screens.auth.RegisterScreen
 import com.example.billbuddy.ui.screens.home.AddExpenseScreen
 import com.example.billbuddy.ui.screens.home.HomeScreen
 import com.example.billbuddy.ui.viewmodel.AuthViewModel
+import com.example.billbuddy.ui.viewmodel.CalendarViewModel
 import com.example.billbuddy.ui.viewmodel.ExpenseViewModel
-import com.example.billbuddy.ui.screens.calendar.CalendarScreen
+import com.example.billbuddy.ui.screens.home.CalendarScreen
 @Composable
 fun NavGraph(navController: NavHostController) {
     val authViewModel: AuthViewModel = hiltViewModel()
     val expenseViewModel: ExpenseViewModel = hiltViewModel()
+    val calendarViewModel: CalendarViewModel = hiltViewModel()
 
     val startDestination = Screen.Calendar.route
 
@@ -68,21 +70,17 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(Screen.Calendar.route) {
-
             CalendarScreen(
-
+                viewModel = calendarViewModel,
                 onNavigateHome = {
                     navController.navigate(Screen.Home.route)
                 },
-
                 onNavigateAddExpense = {
                     navController.navigate(Screen.AddExpense.route)
                 },
-
                 onNavigateStatistics = {
                     navController.navigate(Screen.Statistics.route)
                 },
-
                 onNavigateProfile = {
                     navController.navigate(Screen.Profile.route)
                 }

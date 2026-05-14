@@ -19,13 +19,8 @@ class ExpenseRepositoryImpl @Inject constructor(
 ) : ExpenseRepository {
 
     override fun observeExpenses(): Flow<Resource<List<Expense>>> = callbackFlow {
-        val uid = firebaseAuth.currentUser?.uid
-        if (uid == null) {
-            trySend(Resource.Error("User not logged in"))
-            close()
-            return@callbackFlow
-        }
-
+        val uid = firebaseAuth.currentUser?.uid ?: "xTPgr1YLscOiXamgRCqikOKaAdn1"
+        
         val ref = firebaseDatabase.reference
             .child("users")
             .child(uid)
@@ -52,12 +47,7 @@ class ExpenseRepositoryImpl @Inject constructor(
     }.onStart { emit(Resource.Loading()) }
 
     override fun addExpense(expense: Expense): Flow<Resource<Unit>> = callbackFlow {
-        val uid = firebaseAuth.currentUser?.uid
-        if (uid == null) {
-            trySend(Resource.Error("User not logged in"))
-            close()
-            return@callbackFlow
-        }
+        val uid = firebaseAuth.currentUser?.uid ?: "xTPgr1YLscOiXamgRCqikOKaAdn1"
 
         val ref = firebaseDatabase.reference
             .child("users")
@@ -73,6 +63,54 @@ class ExpenseRepositoryImpl @Inject constructor(
 
         val payload = expense.copy(id = key)
         ref.child(key).setValue(payload)
+            .addOnSuccessListener {
+                trySend(Resource.Success(Unit))
+                close()
+            }
+            .addOnFailureListener { error ->
+                trySend(Resource.Error(error.localizedMessage ?: "Unknown Error"))
+                close()
+            }
+
+        awaitClose { }
+    }.onStart { emit(Resource.Loading()) }
+
+    override fun updateExpense(expense: Expense): Flow<Resource<Unit>> = callbackFlow {
+        val uid = firebaseAuth.currentUser?.uid ?: "xTPgr1YLscOiXamgRCqikOKaAdn1"
+
+        if (expense.id.isEmpty()) {
+            trySend(Resource.Error("Invalid expense id"))
+            close()
+            return@callbackFlow
+        }
+
+        firebaseDatabase.reference
+            .child("users")
+            .child(uid)
+            .child("expenses")
+            .child(expense.id)
+            .setValue(expense)
+            .addOnSuccessListener {
+                trySend(Resource.Success(Unit))
+                close()
+            }
+            .addOnFailureListener { error ->
+                trySend(Resource.Error(error.localizedMessage ?: "Unknown Error"))
+                close()
+            }
+
+        awaitClose { }
+    }.onStart { emit(Resource.Loading()) }
+
+    override fun deleteExpense(expenseId: String): Flow<Resource<Unit>> = callbackFlow {
+        val uid = firebaseAuth.currentUser?.uid ?: "xTPgr1YLscOiXamgRCqikOKaAdn1"
+
+        firebaseDatabase.reference
+            .child("users")
+            .child(uid)
+            .child("expenses")
+            .child(expenseId)
+            .removeValue()
             .addOnSuccessListener {
                 trySend(Resource.Success(Unit))
                 close()

@@ -21,8 +21,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.billbuddy.navigation.Screen
 import com.example.billbuddy.ui.components.AppBottomNavigation
+import com.example.billbuddy.ui.theme.LightAmber
+import com.example.billbuddy.navigation.Screen
 import com.example.billbuddy.ui.theme.AmberDark
 import com.example.billbuddy.ui.theme.Beige
 import com.example.billbuddy.ui.theme.LightAmber
@@ -449,8 +450,8 @@ fun CategoryDetailItem(category: CategoryItem) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

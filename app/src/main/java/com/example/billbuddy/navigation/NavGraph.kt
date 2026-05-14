@@ -20,12 +20,15 @@ import com.example.billbuddy.ui.screens.debt.DebtDetailScreen
 import com.example.billbuddy.ui.screens.group.GroupListScreen
 import com.example.billbuddy.ui.viewmodel.AuthViewModel
 import com.example.billbuddy.ui.viewmodel.DebtViewModel
+import com.example.billbuddy.ui.viewmodel.ExpenseViewModel
+import com.example.billbuddy.ui.viewmodel.CalendarViewModel
 
 @Composable
 fun NavGraph(navController: NavHostController) {
     val authViewModel: AuthViewModel = hiltViewModel()
     val debtViewModel: DebtViewModel = hiltViewModel()
-    
+    val expenseViewModel: ExpenseViewModel = hiltViewModel()
+    val calendarViewModel: CalendarViewModel = hiltViewModel()
     val startDestination = if (authViewModel.currentUser != null) Screen.Home.route else Screen.Login.route
     NavHost(
         navController = navController,
@@ -59,7 +62,7 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(Screen.Home.route) {
             HomeScreen(
-                viewModel = authViewModel,
+                viewModel = expenseViewModel,
                 onNavigateToAddExpense = { navController.navigate(Screen.AddExpense.route) },
                 onNavigateToCalendar = { navController.navigate(Screen.Calendar.route) },
                 onNavigateToStatistics = { navController.navigate(Screen.Statistics.route) },
@@ -69,28 +72,22 @@ fun NavGraph(navController: NavHostController) {
         
         composable(Screen.AddExpense.route) {
             AddExpenseScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onSaveExpense = { date, category, amount, note ->
-                    navController.popBackStack()
-                }
+                viewModel = expenseViewModel,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
         composable(Screen.Calendar.route) {
-
             CalendarScreen(
-
+                viewModel = calendarViewModel,
                 onNavigateHome = {
                     navController.navigate(Screen.Home.route)
                 },
-
                 onNavigateAddExpense = {
                     navController.navigate(Screen.AddExpense.route)
                 },
-
                 onNavigateStatistics = {
                     navController.navigate(Screen.Statistics.route)
                 },
-
                 onNavigateProfile = {
                     navController.navigate(Screen.Profile.route)
                 }

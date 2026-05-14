@@ -20,25 +20,63 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import java.util.*
+import com.example.billbuddy.ui.viewmodel.ExpenseViewModel
+import com.example.billbuddy.utils.Resource
+import java.util.Calendar
+import java.util.Locale
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddExpenseScreen(
-    onNavigateBack: () -> Unit,
-    onSaveExpense: (date: String, category: String, amount: String, note: String) -> Unit
+    viewModel: ExpenseViewModel,
+    onNavigateBack: () -> Unit
 ) {
-    var date by remember { mutableStateOf("2024-04-29") }
+    val initialDate = remember {
+        val calendar = Calendar.getInstance()
+        String.format(
+            Locale.US,
+            "%04d-%02d-%02d",
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH) + 1,
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
+    }
+
+    var date by remember { mutableStateOf(initialDate) }
     var category by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("0") }
+    var amount by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
+    var transactionType by remember { mutableStateOf("EXPENSE") } // "EXPENSE" or "INCOME"
+
+    val categoryOptions = remember {
+        listOf("Ăn uống", "Giải trí", "Mua sắm", "Di chuyển", "Sức khỏe")
+    }
+
+    val saveState by viewModel.saveState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(saveState) {
+        when (val result = saveState) {
+            is Resource.Success -> {
+                viewModel.clearSaveState()
+                onNavigateBack()
+            }
+            is Resource.Error -> {
+                snackbarHostState.showSnackbar(result.message ?: "Lưu thất bại")
+                viewModel.clearSaveState()
+            }
+            else -> Unit
+        }
+    }
 
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
     val datePickerDialog = DatePickerDialog(
         context,
         { _, year, month, dayOfMonth ->
-            date = "$year-${(month + 1).toString().padStart(2, '0')}-${dayOfMonth.toString().padStart(2, '0')}"
+            date = String.format(Locale.US, "%04d-%02d-%02d", year, month + 1, dayOfMonth)
         },
         calendar.get(Calendar.YEAR),
         calendar.get(Calendar.MONTH),
@@ -48,7 +86,7 @@ fun AddExpenseScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Thêm mới chi tiêu", fontWeight = FontWeight.Bold) },
+                title = { Text("Thêm mới giao dịch", fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = { /* TODO */ }) {
                         Icon(Icons.Default.MoreVert, contentDescription = "More")
@@ -59,10 +97,7 @@ fun AddExpenseScreen(
                 )
             )
         },
-        bottomBar = {
-
-
-        }
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -90,12 +125,38 @@ fun AddExpenseScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Thông tin mới",
+                            "Thông tin giao dịch",
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp
                         )
                     }
 
+                    // Transaction Type Switch
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = { transactionType = "EXPENSE" },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (transactionType == "EXPENSE") Color(0xFFE8B931) else Color(0xFFF0F0F0)
+                            ),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Chi tiêu", color = if (transactionType == "EXPENSE") Color.White else Color.Gray)
+                        }
+                        Button(
+                            onClick = { transactionType = "INCOME" },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (transactionType == "INCOME") Color(0xFF4CAF50) else Color(0xFFF0F0F0)
+                            ),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Thu nhập", color = if (transactionType == "INCOME") Color.White else Color.Gray)
+                        }
+                    }
 
                     Column {
                         Text("Ngày", color = Color.Gray, fontSize = 14.sp)
@@ -122,25 +183,35 @@ fun AddExpenseScreen(
                         )
                     }
 
-
-                    Column {
-                        Text("Danh mục chi tiêu", color = Color.Gray, fontSize = 14.sp)
-                        OutlinedTextField(
-                            value = category,
-                            onValueChange = { category = it },
-                            placeholder = { Text("Chọn danh mục") },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color.LightGray,
-                                unfocusedBorderColor = Color.LightGray
+                    if (transactionType == "EXPENSE") {
+                        Column {
+                            Text("Danh mục chi tiêu", color = Color.Gray, fontSize = 14.sp)
+                            Text(
+                                text = if (category.isBlank()) "Chưa chọn" else category,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
                             )
-                        )
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                categoryOptions.chunked(3).forEach { rowOptions ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        rowOptions.forEach { option ->
+                                            FilterChip(
+                                                selected = category == option,
+                                                onClick = { category = option },
+                                                label = { Text(option) }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
 
-
                     Column {
-                        Text("Số tiền chi tiêu", color = Color.Gray, fontSize = 14.sp)
+                        Text(if (transactionType == "EXPENSE") "Số tiền chi tiêu" else "Số tiền thu nhập", color = Color.Gray, fontSize = 14.sp)
                         OutlinedTextField(
                             value = amount,
                             onValueChange = { amount = it },
@@ -153,7 +224,6 @@ fun AddExpenseScreen(
                             )
                         )
                     }
-
 
                     Column {
                         Text("Ghi chú (tùy chọn)", color = Color.Gray, fontSize = 14.sp)
@@ -169,7 +239,6 @@ fun AddExpenseScreen(
                             )
                         )
                     }
-
 
                     Row(
                         modifier = Modifier
@@ -188,12 +257,22 @@ fun AddExpenseScreen(
                             Text("Hủy", color = Color.Gray)
                         }
                         Button(
-                            onClick = { onSaveExpense(date, category, amount, note) },
+                            onClick = {
+                                val parsedAmount = amount.toDoubleOrNull() ?: 0.0
+                                if ((transactionType == "EXPENSE" && category.isBlank()) || parsedAmount <= 0.0) {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Vui lòng nhập đầy đủ thông tin")
+                                    }
+                                } else {
+                                    viewModel.addExpense(date, category.trim(), parsedAmount, note.trim(), transactionType)
+                                }
+                            },
                             modifier = Modifier
                                 .weight(1f)
                                 .height(48.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E49E2)),
-                            shape = RoundedCornerShape(8.dp)
+                            shape = RoundedCornerShape(8.dp),
+                            enabled = saveState !is Resource.Loading
                         ) {
                             Text("Lưu", color = Color.White)
                         }

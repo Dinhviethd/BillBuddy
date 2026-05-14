@@ -96,8 +96,18 @@ object SeedData {
                         status = DebtStatus.PENDING,
                         createdAt = Timestamp.now()
                     )
+                    val debt2 = Debt(
+                        amount = 200000L,
+                        description = "Cho mượn tiền mặt",
+                        debtorId = uid,
+                        status = DebtStatus.PENDING,
+                        createdAt = Timestamp.now(),
+                    )
                     Log.d(TAG, "[Debt] Đang add debt, status=${debt.status}")
                     debtsRef.add(debt)
+                        .addOnSuccessListener { docRef -> Log.d(TAG, "[Debt] ADD thành công, id=${docRef.id}") }
+                        .addOnFailureListener { e -> Log.e(TAG, "[Debt] ADD THẤT BẠI: ${e.message}", e) }
+                    debtsRef.add(debt2)
                         .addOnSuccessListener { docRef -> Log.d(TAG, "[Debt] ADD thành công, id=${docRef.id}") }
                         .addOnFailureListener { e -> Log.e(TAG, "[Debt] ADD THẤT BẠI: ${e.message}", e) }
                 }

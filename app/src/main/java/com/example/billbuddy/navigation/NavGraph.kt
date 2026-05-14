@@ -14,12 +14,16 @@ import com.example.billbuddy.ui.screens.settings.ProfileScreen
 import com.example.billbuddy.ui.screens.settings.EditProfileScreen
 import com.example.billbuddy.ui.screens.calendar.CalendarScreen
 import com.example.billbuddy.ui.screens.debt.DebtListScreen
+import com.example.billbuddy.ui.screens.debt.AddDebtScreen
+import com.example.billbuddy.ui.screens.debt.DebtDetailScreen
 import com.example.billbuddy.ui.screens.group.GroupListScreen
 import com.example.billbuddy.ui.viewmodel.AuthViewModel
+import com.example.billbuddy.ui.viewmodel.DebtViewModel
 
 @Composable
 fun NavGraph(navController: NavHostController) {
     val authViewModel: AuthViewModel = hiltViewModel()
+    val debtViewModel: DebtViewModel = hiltViewModel()
     
     val startDestination = if (authViewModel.currentUser != null) Screen.Home.route else Screen.Login.route
     NavHost(
@@ -153,10 +157,28 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(Screen.DebtList.route) {
             DebtListScreen(
+                viewModel = debtViewModel,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToAddDebt = {
-                    // navController.navigate(Screen.AddDebt.route)
+                    navController.navigate(Screen.AddDebt.route)
+                },
+                onNavigateToDebtDetail = { debtId ->
+                    navController.navigate(Screen.DebtDetail.createRoute(debtId))
                 }
+            )
+        }
+        composable(Screen.AddDebt.route) {
+            AddDebtScreen(
+                viewModel = debtViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.DebtDetail.route) { backStackEntry ->
+            val debtId = backStackEntry.arguments?.getString("debtId") ?: ""
+            DebtDetailScreen(
+                debtId = debtId,
+                viewModel = debtViewModel,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

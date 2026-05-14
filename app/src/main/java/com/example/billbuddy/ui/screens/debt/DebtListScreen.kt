@@ -1,6 +1,5 @@
 package com.example.billbuddy.ui.screens.debt
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,49 +16,31 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.billbuddy.data.model.Debt
+import com.example.billbuddy.data.model.DebtStatus
 import com.example.billbuddy.ui.theme.AppBackground
-
-data class DebtItem(
-    val name: String,
-    val description: String,
-    val amount: String,
-    val dueDate: String,
-    val isCreditor: Boolean, // true = cho vay, false = đi vay
-    val status: String // "PENDING" or "SETTLED"
-)
+import com.example.billbuddy.ui.viewmodel.DebtViewModel
+import com.example.billbuddy.utils.Resource
+import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DebtListScreen(
+    viewModel: DebtViewModel,
     onNavigateBack: () -> Unit,
-    onNavigateToAddDebt: () -> Unit
+    onNavigateToAddDebt: () -> Unit,
+    onNavigateToDebtDetail: (String) -> Unit
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
-
-    val debts = listOf(
-        DebtItem("Nguyễn Văn A", "Cho mượn tiền mặt", "+200,000đ", "15/06/2025", true, "PENDING"),
-        DebtItem("Trần Thị B", "Trả tiền ăn trưa", "-150,000đ", "20/05/2025", false, "PENDING"),
-        DebtItem("Lê Văn C", "Cho mượn mua sách", "+80,000đ", "01/05/2025", true, "SETTLED"),
-        DebtItem("Phạm Thị D", "Góp tiền quà sinh nhật", "-120,000đ", "10/04/2025", false, "SETTLED")
-    )
-
-    val filteredDebts = when (selectedTab) {
-        0 -> debts
-        1 -> debts.filter { it.status == "PENDING" }
-        2 -> debts.filter { it.status == "SETTLED" }
-        else -> debts
-    }
+    val debtsState by viewModel.debtsState
+    val currentUserId = viewModel.currentUserId ?: ""
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        "Khoản nợ",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
+                title = { Text("Khoản nợ", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -84,72 +65,106 @@ fun DebtListScreen(
         },
         containerColor = AppBackground
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Summary Card
-            item {
-                DebtSummaryCard()
+        when (val resource = debtsState) {
+            is Resource.Loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             }
+            is Resource.Error -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(text = resource.message ?: "Unknown Error", color = Color.Red)
+                }
+            }
+            is Resource.Success -> {
+                val debts = resource.data ?: emptyList()
 
-            // Tab Filters
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                val filteredDebts = when (selectedTab) {
+                    0 -> debts
+                    1 -> debts.filter { it.status == DebtStatus.PENDING }
+                    2 -> debts.filter { it.status == DebtStatus.SETTLED }
+                    else -> debts
+                }
+
+                val totalLent     = debts.filter { it.creditorId == currentUserId }.sumOf { it.amount }
+                val totalBorrowed = debts.filter { it.debtorId   == currentUserId }.sumOf { it.amount }
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    DebtTabButton(
-                        text = "Tất cả",
-                        isSelected = selectedTab == 0,
-                        modifier = Modifier.weight(1f),
-                        onClick = { selectedTab = 0 }
-                    )
-                    DebtTabButton(
-                        text = "Chưa trả",
-                        isSelected = selectedTab == 1,
-                        modifier = Modifier.weight(1f),
-                        onClick = { selectedTab = 1 }
-                    )
-                    DebtTabButton(
-                        text = "Đã trả",
-                        isSelected = selectedTab == 2,
-                        modifier = Modifier.weight(1f),
-                        onClick = { selectedTab = 2 }
-                    )
+                    item {
+                        DebtSummaryCard(totalLent, totalBorrowed)
+                    }
+
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            DebtTabButton(
+                                text = "Tất cả",
+                                isSelected = selectedTab == 0,
+                                modifier = Modifier.weight(1f),
+                                onClick = { selectedTab = 0 }
+                            )
+                            DebtTabButton(
+                                text = "Chưa trả",
+                                isSelected = selectedTab == 1,
+                                modifier = Modifier.weight(1f),
+                                onClick = { selectedTab = 1 }
+                            )
+                            DebtTabButton(
+                                text = "Đã trả",
+                                isSelected = selectedTab == 2,
+                                modifier = Modifier.weight(1f),
+                                onClick = { selectedTab = 2 }
+                            )
+                        }
+                    }
+
+                    item {
+                        Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                            Text(
+                                text = "Danh sách khoản nợ",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                            )
+                            Text(
+                                text = "${filteredDebts.size} khoản",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray
+                            )
+                        }
+                    }
+
+                    items(filteredDebts) { debt ->
+                        LaunchedEffect(debt.documentId) {
+                            viewModel.loadPartnerEmail(debt, currentUserId)
+                        }
+                        val partnerEmail = viewModel.partnerEmails[debt.documentId]
+                        DebtCard(
+                            debt = debt,
+                            currentUserId = currentUserId,
+                            partnerDisplay = partnerEmail ?: "Đang tải...",
+                            onClick = { onNavigateToDebtDetail(debt.documentId) }
+                        )
+                    }
+
+                    item { Spacer(modifier = Modifier.height(16.dp)) }
                 }
             }
-
-            // Section Title
-            item {
-                Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                    Text(
-                        text = "Danh sách khoản nợ",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                    )
-                    Text(
-                        text = "${filteredDebts.size} khoản",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
-                    )
-                }
-            }
-
-            // Debt Items
-            items(filteredDebts) { debt ->
-                DebtCard(debt)
-            }
-
-            item { Spacer(modifier = Modifier.height(16.dp)) }
         }
     }
 }
 
 @Composable
-fun DebtSummaryCard() {
+fun DebtSummaryCard(totalLent: Long, totalBorrowed: Long) {
+    val numberFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("vi-VN"))
+    val balance = totalLent - totalBorrowed
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -157,17 +172,13 @@ fun DebtSummaryCard() {
         color = Color(0xFF212121),
         contentColor = Color.White
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 "Tổng quan khoản nợ",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
-
             Spacer(modifier = Modifier.height(12.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -175,7 +186,7 @@ fun DebtSummaryCard() {
                 Column {
                     Text("Cho vay", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                     Text(
-                        "+280,000đ",
+                        numberFormat.format(totalLent),
                         style = MaterialTheme.typography.titleMedium,
                         color = Color(0xFF4CAF50)
                     )
@@ -183,7 +194,7 @@ fun DebtSummaryCard() {
                 Column(horizontalAlignment = Alignment.End) {
                     Text("Đi vay", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                     Text(
-                        "-270,000đ",
+                        numberFormat.format(totalBorrowed),
                         style = MaterialTheme.typography.titleMedium,
                         color = Color(0xFFF44336)
                     )
@@ -191,9 +202,9 @@ fun DebtSummaryCard() {
                 Column(horizontalAlignment = Alignment.End) {
                     Text("Số dư", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                     Text(
-                        "+10,000đ",
+                        numberFormat.format(balance),
                         style = MaterialTheme.typography.titleMedium,
-                        color = Color(0xFF4CAF50)
+                        color = if (balance >= 0) Color(0xFF4CAF50) else Color(0xFFF44336)
                     )
                 }
             }
@@ -226,9 +237,16 @@ fun DebtTabButton(
 }
 
 @Composable
-fun DebtCard(debt: DebtItem) {
+fun DebtCard(debt: Debt, currentUserId: String, partnerDisplay: String, onClick: () -> Unit) {
+    val isCreditor = debt.creditorId == currentUserId
+
+    // Bỏ phần tính partnerDisplay cũ, dùng param truyền vào
+    val numberFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("vi-VN"))
+    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val dateStr = debt.dueDate?.toDate()?.let { dateFormat.format(it) } ?: "Chưa có hạn"
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
@@ -238,19 +256,18 @@ fun DebtCard(debt: DebtItem) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon
             Surface(
                 modifier = Modifier.size(42.dp),
                 shape = RoundedCornerShape(10.dp),
-                color = if (debt.isCreditor) Color(0xFFC8E6C9).copy(alpha = 0.6f)
+                color = if (isCreditor) Color(0xFFC8E6C9).copy(alpha = 0.6f)
                 else Color(0xFFFFCDD2).copy(alpha = 0.6f)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        imageVector = if (debt.isCreditor) Icons.Default.CallMade
+                        imageVector = if (isCreditor) Icons.Default.CallMade
                         else Icons.Default.CallReceived,
                         contentDescription = null,
-                        tint = if (debt.isCreditor) Color(0xFF388E3C) else Color(0xFFD32F2F),
+                        tint = if (isCreditor) Color(0xFF388E3C) else Color(0xFFD32F2F),
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -258,10 +275,9 @@ fun DebtCard(debt: DebtItem) {
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Info
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = debt.name,
+                    text = partnerDisplay,  // ← hiển thị email hoặc "Đang tải..."
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium)
                 )
                 Text(
@@ -280,30 +296,30 @@ fun DebtCard(debt: DebtItem) {
                         tint = Color.Gray
                     )
                     Text(
-                        text = debt.dueDate,
+                        text = dateStr,
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.Gray
                     )
                 }
             }
 
-            // Amount & Status
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = debt.amount,
+                    text = if (isCreditor) "+${numberFormat.format(debt.amount)}"
+                    else "-${numberFormat.format(debt.amount)}",
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                    color = if (debt.isCreditor) Color(0xFF388E3C) else Color(0xFFD32F2F)
+                    color = if (isCreditor) Color(0xFF388E3C) else Color(0xFFD32F2F)
                 )
                 Surface(
                     shape = RoundedCornerShape(4.dp),
-                    color = if (debt.status == "PENDING") Color(0xFFFFF3E0)
+                    color = if (debt.status == DebtStatus.PENDING) Color(0xFFFFF3E0)
                     else Color(0xFFE8F5E9)
                 ) {
                     Text(
-                        text = if (debt.status == "PENDING") "Chưa trả" else "Đã trả",
+                        text = if (debt.status == DebtStatus.PENDING) "Chưa trả" else "Đã trả",
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (debt.status == "PENDING") Color(0xFFE65100)
+                        color = if (debt.status == DebtStatus.PENDING) Color(0xFFE65100)
                         else Color(0xFF2E7D32)
                     )
                 }

@@ -13,6 +13,7 @@ data class Debt(
     val documentId: String = "",
     val amount: Long = 0L,
     val description: String = "",
+    val note: String = "",
     val creditorId: String = "",
     val debtorId: String = "",
     val status: DebtStatus = DebtStatus.PENDING,

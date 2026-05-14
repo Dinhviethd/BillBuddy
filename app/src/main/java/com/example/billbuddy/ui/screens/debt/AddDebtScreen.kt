@@ -1,6 +1,7 @@
 package com.example.billbuddy.ui.screens.debt
 
 import android.app.DatePickerDialog
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,30 +18,54 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.billbuddy.ui.viewmodel.DebtViewModel
+import com.example.billbuddy.utils.Resource
+import com.google.firebase.Timestamp
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddDebtScreen(
+    viewModel: DebtViewModel,
     onNavigateBack: () -> Unit,
-    onSaveDebt: (description: String, amount: String, dueDate: String, isCreditor: Boolean) -> Unit
 ) {
     var description by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
-    var debtorName by remember { mutableStateOf("") }
+    var debtorEmail by remember { mutableStateOf("") }  // ← nhập email thay vì tên
     var note by remember { mutableStateOf("") }
-    var dueDate by remember { mutableStateOf("2025-06-15") }
-    var isCreditor by remember { mutableStateOf(true) } // true = cho vay, false = đi vay
+    var dueDate by remember { mutableStateOf<Timestamp?>(null) }
+    var dueDateDisplay by remember { mutableStateOf("Chọn ngày") }
 
+    val addDebtState by viewModel.addDebtState
     val context = LocalContext.current
+
+    // Xử lý kết quả sau khi lưu
+    LaunchedEffect(addDebtState) {
+        when (val state = addDebtState) {
+            is Resource.Success -> {
+                Toast.makeText(context, "Đã thêm khoản nợ!", Toast.LENGTH_SHORT).show()
+                viewModel.resetAddDebtState()
+                onNavigateBack()
+            }
+            is Resource.Error -> {
+                Toast.makeText(context, state.message ?: "Lỗi", Toast.LENGTH_LONG).show()
+                viewModel.resetAddDebtState()
+            }
+            else -> Unit
+        }
+    }
+
     val calendar = Calendar.getInstance()
     val datePickerDialog = DatePickerDialog(
         context,
-        { _, year, month, dayOfMonth ->
-            dueDate = "$year-${(month + 1).toString().padStart(2, '0')}-${dayOfMonth.toString().padStart(2, '0')}"
+        { _, year, month, day ->
+            val cal = Calendar.getInstance().apply { set(year, month, day) }
+            dueDate = Timestamp(cal.time)
+            dueDateDisplay = "$day/${month + 1}/$year"
         },
         calendar.get(Calendar.YEAR),
         calendar.get(Calendar.MONTH),
@@ -50,15 +75,10 @@ fun AddDebtScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Thêm khoản nợ", fontWeight = FontWeight.Bold) },
+                title = { Text("Thêm khoản cho vay", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More")
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -85,104 +105,18 @@ fun AddDebtScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.ReceiptLong,
-                            contentDescription = null,
-                            tint = Color(0xFF5E49E2),
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "Thông tin khoản nợ",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
-                        )
-                    }
-
-                    // Loại khoản nợ
+                    // Email người vay
                     Column {
-                        Text("Loại khoản nợ", color = Color.Gray, fontSize = 14.sp)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Surface(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(48.dp)
-                                    .clickable { isCreditor = true },
-                                shape = RoundedCornerShape(8.dp),
-                                color = if (isCreditor) Color(0xFFE8F5E9) else Color(0xFFF5F5F5),
-                                border = if (isCreditor)
-                                    androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFF4CAF50))
-                                else null
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxSize(),
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        Icons.Default.CallMade,
-                                        contentDescription = null,
-                                        tint = if (isCreditor) Color(0xFF388E3C) else Color.Gray,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        "Cho vay",
-                                        color = if (isCreditor) Color(0xFF388E3C) else Color.Gray,
-                                        fontWeight = if (isCreditor) FontWeight.Bold else FontWeight.Normal
-                                    )
-                                }
-                            }
-                            Surface(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(48.dp)
-                                    .clickable { isCreditor = false },
-                                shape = RoundedCornerShape(8.dp),
-                                color = if (!isCreditor) Color(0xFFFFEBEE) else Color(0xFFF5F5F5),
-                                border = if (!isCreditor)
-                                    androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFF44336))
-                                else null
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxSize(),
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        Icons.Default.CallReceived,
-                                        contentDescription = null,
-                                        tint = if (!isCreditor) Color(0xFFD32F2F) else Color.Gray,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        "Đi vay",
-                                        color = if (!isCreditor) Color(0xFFD32F2F) else Color.Gray,
-                                        fontWeight = if (!isCreditor) FontWeight.Bold else FontWeight.Normal
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // Tên người
-                    Column {
-                        Text(
-                            if (isCreditor) "Người vay" else "Người cho vay",
-                            color = Color.Gray,
-                            fontSize = 14.sp
-                        )
+                        Text("Email người vay", color = Color.Gray, fontSize = 14.sp)
                         OutlinedTextField(
-                            value = debtorName,
-                            onValueChange = { debtorName = it },
-                            placeholder = { Text("Nhập tên") },
+                            value = debtorEmail,
+                            onValueChange = { debtorEmail = it },
+                            placeholder = { Text("example@email.com") },
                             modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Email,
+                                imeAction = ImeAction.Next
+                            ),
                             shape = RoundedCornerShape(8.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = Color.LightGray,
@@ -193,13 +127,16 @@ fun AddDebtScreen(
 
                     // Số tiền
                     Column {
-                        Text("Số tiền", color = Color.Gray, fontSize = 14.sp)
+                        Text("Số tiền (VNĐ)", color = Color.Gray, fontSize = 14.sp)
                         OutlinedTextField(
                             value = amount,
-                            onValueChange = { amount = it },
+                            onValueChange = { amount = it.filter { c -> c.isDigit() } },
                             placeholder = { Text("0") },
                             modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Next
+                            ),
                             shape = RoundedCornerShape(8.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = Color.LightGray,
@@ -214,8 +151,9 @@ fun AddDebtScreen(
                         OutlinedTextField(
                             value = description,
                             onValueChange = { description = it },
-                            placeholder = { Text("Lý do vay/cho vay...") },
+                            placeholder = { Text("Lý do cho vay...") },
                             modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                             shape = RoundedCornerShape(8.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = Color.LightGray,
@@ -228,7 +166,7 @@ fun AddDebtScreen(
                     Column {
                         Text("Ngày đến hạn", color = Color.Gray, fontSize = 14.sp)
                         OutlinedTextField(
-                            value = dueDate,
+                            value = dueDateDisplay,
                             onValueChange = { },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -275,23 +213,45 @@ fun AddDebtScreen(
                     ) {
                         Button(
                             onClick = onNavigateBack,
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(48.dp),
+                            modifier = Modifier.weight(1f).height(48.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF0F0F0)),
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Text("Hủy", color = Color.Gray)
                         }
                         Button(
-                            onClick = { onSaveDebt(description, amount, dueDate, isCreditor) },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(48.dp),
+                            onClick = {
+                                val amountLong = amount.toLongOrNull() ?: 0L
+                                if (debtorEmail.isBlank()) {
+                                    Toast.makeText(context, "Vui lòng nhập email người vay", Toast.LENGTH_SHORT).show()
+                                    return@Button
+                                }
+                                if (amountLong <= 0L) {
+                                    Toast.makeText(context, "Vui lòng nhập số tiền hợp lệ", Toast.LENGTH_SHORT).show()
+                                    return@Button
+                                }
+                                viewModel.addDebtByEmail(
+                                    debtorEmail = debtorEmail.trim(),
+                                    amount = amountLong,
+                                    description = description,
+                                    note = note,
+                                    dueDate = dueDate
+                                )
+                            },
+                            enabled = addDebtState !is Resource.Loading,
+                            modifier = Modifier.weight(1f).height(48.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E49E2)),
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Text("Lưu", color = Color.White)
+                            if (addDebtState is Resource.Loading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text("Lưu", color = Color.White)
+                            }
                         }
                     }
                 }

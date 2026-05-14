@@ -23,18 +23,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.billbuddy.ui.components.AppBottomNavigation
 import com.example.billbuddy.ui.theme.LightAmber
+import com.example.billbuddy.navigation.Screen
 import com.example.billbuddy.ui.theme.AmberDark
 import com.example.billbuddy.ui.theme.Beige
+import com.example.billbuddy.ui.theme.LightAmber
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun StatisticsScreen(
-    onNavigateHome: () -> Unit,
-    onNavigateCalendar: () -> Unit,
-    onNavigateAddExpense: () -> Unit,
-    onNavigateProfile: () -> Unit
+    onNavigateToHome: () -> Unit,
+    onNavigateToCalendar: () -> Unit,
+    onNavigateToAddExpense: () -> Unit,
+    onNavigateToProfile: () -> Unit
 ) {
     var fromDate by remember { mutableStateOf(LocalDate.now()) }
     var toDate by remember { mutableStateOf(LocalDate.now()) }
@@ -42,27 +44,32 @@ fun StatisticsScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Thống kê", fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        text = "Thống kê",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 actions = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.MoreVert, null)
+                    IconButton(onClick = { }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "More")
                     }
                 }
             )
         },
         bottomBar = {
             AppBottomNavigation(
-                currentRoute = "statistics",
-                onHomeClick = onNavigateHome,
-                onCalendarClick = onNavigateCalendar,
+                currentRoute = Screen.Statistics.route,
+                onHomeClick = onNavigateToHome,
+                onCalendarClick = onNavigateToCalendar,
+                onAddClick = onNavigateToAddExpense,
                 onStatsClick = {},
-                onProfileClick = onNavigateProfile,
-                onAddClick = onNavigateAddExpense
+                onProfileClick = onNavigateToProfile
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onNavigateAddExpense,
+                onClick = onNavigateToAddExpense,
                 shape = CircleShape,
                 containerColor = Color(0xFFD47500),
                 contentColor = Color.White,
@@ -418,7 +425,7 @@ fun CategoryDetailsSection() {
             categories.forEach { category ->
                 CategoryDetailItem(category = category)
                 if (category != categories.last()) {
-                    Divider(color = Color.LightGray, thickness = 1.dp)
+                    HorizontalDivider(color = Color.LightGray, thickness = 1.dp)
                 }
             }
 

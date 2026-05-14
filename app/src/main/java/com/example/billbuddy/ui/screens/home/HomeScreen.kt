@@ -15,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -29,6 +30,10 @@ import java.time.YearMonth
 import java.time.ZoneId
 import java.util.Locale
 import kotlin.math.abs
+import com.example.billbuddy.navigation.Screen
+import com.example.billbuddy.ui.components.AppBottomNavigation
+import com.example.billbuddy.ui.components.StatisticsInfoBox
+import com.example.billbuddy.ui.viewmodel.AuthViewModel
 
 data class CategoryExpense(
     val name: String,
@@ -117,15 +122,15 @@ fun HomeScreen(
                     )
                 },
                 actions = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.MoreVert, null)
+                    IconButton(onClick = { }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "More")
                     }
                 }
             )
         },
         bottomBar = {
             AppBottomNavigation(
-                currentRoute = "home",
+                currentRoute = Screen.Home.route,
                 onHomeClick = {},
                 onCalendarClick = onNavigateToCalendar,
                 onStatsClick = onNavigateToStatistics,

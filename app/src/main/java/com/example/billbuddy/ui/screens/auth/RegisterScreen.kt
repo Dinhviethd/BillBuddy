@@ -56,7 +56,7 @@ fun RegisterScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.secondary,
+                color = MaterialTheme.colorScheme.background,
                 tonalElevation = 0.dp
             ) {
                 Column(

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.billbuddy.data.model.Expense
 import com.example.billbuddy.data.repo.ExpenseRepository
 import com.example.billbuddy.utils.Resource
+import com.google.firebase.Timestamp
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import java.text.SimpleDateFormat
@@ -84,13 +85,19 @@ class CalendarViewModel @Inject constructor(
         val state = _uiState.value
         val filterDate = "${state.selectedYear}-${state.selectedMonth}-${state.selectedDay}"
         
-        val filtered = state.expenses.filter { it.date == filterDate }
-        val total = filtered.sumOf { it.amount }
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val filtered = state.expenses.filter { expense ->
+            expense.date?.toDate()?.let { sdf.format(it) == filterDate } ?: false
+        }
+        
+        val totalIncome = filtered.filter { it.type == "INCOME" }.sumOf { it.amount }.toDouble()
+        val totalExpense = filtered.filter { it.type == "EXPENSE" }.sumOf { it.amount }.toDouble()
+        val netBalance = totalIncome - totalExpense
         
         _uiState.update { 
             it.copy(
                 filteredExpenses = filtered,
-                totalAmount = total
+                totalAmount = netBalance
             )
         }
     }
@@ -111,8 +118,9 @@ class CalendarViewModel @Inject constructor(
         _editState.value = null
     }
 
-    fun formatTime(timestamp: Long): String {
+    fun formatTime(timestamp: Timestamp?): String {
+        val date = timestamp?.toDate() ?: return ""
         val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
-        return sdf.format(Date(timestamp))
+        return sdf.format(date)
     }
 }

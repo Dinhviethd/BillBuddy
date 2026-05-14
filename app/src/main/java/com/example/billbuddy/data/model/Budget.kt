@@ -3,16 +3,20 @@ package com.example.billbuddy.data.model
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentId
 
-data class Expense(
+enum class BudgetPeriod {
+    MONTHLY,
+    WEEKLY,
+    YEARLY
+}
+
+data class Budget(
     @DocumentId
     val documentId: String = "",
+    val name: String = "",
     val amount: Long = 0L,
-    val description: String = "",
-    val date: Timestamp? = null,
+    val period: BudgetPeriod = BudgetPeriod.MONTHLY,
     val categoryId: String = "",
-    val type: String = "EXPENSE", // "EXPENSE" or "INCOME"
     val userId: String = "",
-    val groupId: String? = null,
-    val splitMethod: String? = null,
-    val createdAt: Timestamp? = null
+    val startDate: Timestamp? = null,
+    val endDate: Timestamp? = null
 )

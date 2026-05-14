@@ -86,7 +86,14 @@ fun NavGraph(navController: NavHostController) {
                 }
             )
         }
-        composable(Screen.Statistics.route) {  }
+        composable(Screen.Statistics.route) {
+            com.example.billbuddy.ui.screens.statistics.StatisticsScreen(
+                onNavigateHome = { navController.navigate(Screen.Home.route) },
+                onNavigateCalendar = { navController.navigate(Screen.Calendar.route) },
+                onNavigateAddExpense = { navController.navigate(Screen.AddExpense.route) },
+                onNavigateProfile = { navController.navigate(Screen.Profile.route) }
+            )
+        }
         composable(Screen.Profile.route) {  }
     }
 }

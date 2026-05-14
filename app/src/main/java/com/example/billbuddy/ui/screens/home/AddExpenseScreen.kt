@@ -47,6 +47,7 @@ fun AddExpenseScreen(
     var category by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
+    var transactionType by remember { mutableStateOf("EXPENSE") } // "EXPENSE" or "INCOME"
 
     val categoryOptions = remember {
         listOf("Ăn uống", "Giải trí", "Mua sắm", "Di chuyển", "Sức khỏe")
@@ -63,7 +64,7 @@ fun AddExpenseScreen(
                 onNavigateBack()
             }
             is Resource.Error -> {
-                snackbarHostState.showSnackbar(result.message ?: "Luu that bai")
+                snackbarHostState.showSnackbar(result.message ?: "Lưu thất bại")
                 viewModel.clearSaveState()
             }
             else -> Unit
@@ -85,7 +86,7 @@ fun AddExpenseScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Thêm mới chi tiêu", fontWeight = FontWeight.Bold) },
+                title = { Text("Thêm mới giao dịch", fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = { /* TODO */ }) {
                         Icon(Icons.Default.MoreVert, contentDescription = "More")
@@ -96,11 +97,7 @@ fun AddExpenseScreen(
                 )
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        bottomBar = {
-
-
-        }
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -128,12 +125,38 @@ fun AddExpenseScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Thông tin mới",
+                            "Thông tin giao dịch",
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp
                         )
                     }
 
+                    // Transaction Type Switch
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = { transactionType = "EXPENSE" },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (transactionType == "EXPENSE") Color(0xFFE8B931) else Color(0xFFF0F0F0)
+                            ),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Chi tiêu", color = if (transactionType == "EXPENSE") Color.White else Color.Gray)
+                        }
+                        Button(
+                            onClick = { transactionType = "INCOME" },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (transactionType == "INCOME") Color(0xFF4CAF50) else Color(0xFFF0F0F0)
+                            ),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Thu nhập", color = if (transactionType == "INCOME") Color.White else Color.Gray)
+                        }
+                    }
 
                     Column {
                         Text("Ngày", color = Color.Gray, fontSize = 14.sp)
@@ -160,35 +183,35 @@ fun AddExpenseScreen(
                         )
                     }
 
-
-                    Column {
-                        Text("Danh mục chi tiêu", color = Color.Gray, fontSize = 14.sp)
-                        Text(
-                            text = if (category.isBlank()) "Chưa chọn" else category,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
-                        )
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            categoryOptions.chunked(3).forEach { rowOptions ->
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    rowOptions.forEach { option ->
-                                        FilterChip(
-                                            selected = category == option,
-                                            onClick = { category = option },
-                                            label = { Text(option) }
-                                        )
+                    if (transactionType == "EXPENSE") {
+                        Column {
+                            Text("Danh mục chi tiêu", color = Color.Gray, fontSize = 14.sp)
+                            Text(
+                                text = if (category.isBlank()) "Chưa chọn" else category,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
+                            )
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                categoryOptions.chunked(3).forEach { rowOptions ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        rowOptions.forEach { option ->
+                                            FilterChip(
+                                                selected = category == option,
+                                                onClick = { category = option },
+                                                label = { Text(option) }
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
                     }
 
-
                     Column {
-                        Text("Số tiền chi tiêu", color = Color.Gray, fontSize = 14.sp)
+                        Text(if (transactionType == "EXPENSE") "Số tiền chi tiêu" else "Số tiền thu nhập", color = Color.Gray, fontSize = 14.sp)
                         OutlinedTextField(
                             value = amount,
                             onValueChange = { amount = it },
@@ -201,7 +224,6 @@ fun AddExpenseScreen(
                             )
                         )
                     }
-
 
                     Column {
                         Text("Ghi chú (tùy chọn)", color = Color.Gray, fontSize = 14.sp)
@@ -217,7 +239,6 @@ fun AddExpenseScreen(
                             )
                         )
                     }
-
 
                     Row(
                         modifier = Modifier
@@ -238,12 +259,12 @@ fun AddExpenseScreen(
                         Button(
                             onClick = {
                                 val parsedAmount = amount.toDoubleOrNull() ?: 0.0
-                                if (category.isBlank() || parsedAmount <= 0.0) {
+                                if ((transactionType == "EXPENSE" && category.isBlank()) || parsedAmount <= 0.0) {
                                     scope.launch {
-                                        snackbarHostState.showSnackbar("Vui lòng nhập danh mục và số tiền hợp lệ")
+                                        snackbarHostState.showSnackbar("Vui lòng nhập đầy đủ thông tin")
                                     }
                                 } else {
-                                    viewModel.addExpense(date, category.trim(), parsedAmount, note.trim())
+                                    viewModel.addExpense(date, category.trim(), parsedAmount, note.trim(), transactionType)
                                 }
                             },
                             modifier = Modifier

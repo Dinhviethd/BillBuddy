@@ -2,6 +2,7 @@ package com.example.billbuddy.ui.screens.statistics
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -9,79 +10,103 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.Canvas
+import com.example.billbuddy.ui.components.AppBottomNavigation
 import com.example.billbuddy.ui.theme.LightAmber
 import com.example.billbuddy.ui.theme.AmberDark
 import com.example.billbuddy.ui.theme.Beige
 import java.time.LocalDate
-import java.time.YearMonth
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun StatisticsScreen() {
+fun StatisticsScreen(
+    onNavigateHome: () -> Unit,
+    onNavigateCalendar: () -> Unit,
+    onNavigateAddExpense: () -> Unit,
+    onNavigateProfile: () -> Unit
+) {
     var fromDate by remember { mutableStateOf(LocalDate.now()) }
     var toDate by remember { mutableStateOf(LocalDate.now()) }
     
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFFFF9EB))
-            .verticalScroll(rememberScrollState())
-    ) {
-        // Header
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(LightAmber)
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Thống kê",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Thống kê", fontWeight = FontWeight.Bold) },
+                actions = {
+                    IconButton(onClick = {}) {
+                        Icon(Icons.Default.MoreVert, null)
+                    }
+                }
             )
+        },
+        bottomBar = {
+            AppBottomNavigation(
+                currentRoute = "statistics",
+                onHomeClick = onNavigateHome,
+                onCalendarClick = onNavigateCalendar,
+                onStatsClick = {},
+                onProfileClick = onNavigateProfile,
+                onAddClick = onNavigateAddExpense
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onNavigateAddExpense,
+                shape = CircleShape,
+                containerColor = Color(0xFFD47500),
+                contentColor = Color.White,
+                modifier = Modifier.offset(y = 50.dp)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add", modifier = Modifier.size(32.dp))
+            }
+        },
+        floatingActionButtonPosition = FabPosition.Center
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .background(Color(0xFFFFF9EB))
+                .verticalScroll(rememberScrollState())
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Date Range Selection
+            DateRangeSection(
+                fromDate = fromDate,
+                toDate = toDate,
+                onFromDateChange = { fromDate = it },
+                onToDateChange = { toDate = it }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Summary Section
+            SummarySection()
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Pie Chart Section
+            PieChartSection()
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Category Details Section
+            CategoryDetailsSection()
+
+            Spacer(modifier = Modifier.height(80.dp))
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Date Range Selection
-        DateRangeSection(
-            fromDate = fromDate,
-            toDate = toDate,
-            onFromDateChange = { fromDate = it },
-            onToDateChange = { toDate = it }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Summary Section
-        SummarySection()
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Pie Chart Section
-        PieChartSection()
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Category Details Section
-        CategoryDetailsSection()
-
-        Spacer(modifier = Modifier.height(80.dp))
     }
 }
 
@@ -418,8 +443,8 @@ fun CategoryDetailItem(category: CategoryItem) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

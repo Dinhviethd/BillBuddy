@@ -19,15 +19,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.billbuddy.data.model.Expense
-import com.example.billbuddy.ui.screens.home.BottomNavItem
+import com.example.billbuddy.ui.components.AppBottomNavigation
 import com.example.billbuddy.ui.theme.AppBackground
 import com.example.billbuddy.ui.theme.LightAmber
 import com.example.billbuddy.ui.viewmodel.CalendarViewModel
 import com.example.billbuddy.utils.Resource
 import java.util.Locale
+import kotlin.math.abs
 
-fun getCategoryIcon(category: String): ImageVector {
-    return when (category) {
+fun getCategoryIcon(categoryId: String): ImageVector {
+    if (categoryId == "Thu nhập") return Icons.Default.AddCard
+    return when (categoryId) {
         "Ăn uống" -> Icons.Default.Restaurant
         "Giải trí" -> Icons.Default.VideogameAsset
         "Mua sắm" -> Icons.Default.ShoppingBag
@@ -37,8 +39,9 @@ fun getCategoryIcon(category: String): ImageVector {
     }
 }
 
-fun getCategoryColor(category: String): Color {
-    return when (category) {
+fun getCategoryColor(categoryId: String): Color {
+    if (categoryId == "Thu nhập") return Color(0xFFC8E6C9)
+    return when (categoryId) {
         "Ăn uống" -> Color(0xFFFFE0B2)
         "Giải trí" -> Color(0xFFE9D5FF)
         "Mua sắm" -> Color(0xFFFBCFE8)
@@ -46,6 +49,14 @@ fun getCategoryColor(category: String): Color {
         "Sức khỏe" -> Color(0xFFC7F9CC)
         else -> Color(0xFFF3F4F6)
     }
+}
+
+fun getCategoryName(categoryId: String): String {
+    // If categoryId is already a friendly name from our list, return it.
+    // Otherwise, we might need a mapping if they were actual IDs.
+    // Based on AddExpenseScreen.kt, these are the strings used:
+    // "Ăn uống", "Giải trí", "Mua sắm", "Di chuyển", "Sức khỏe"
+    return categoryId
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -105,45 +116,14 @@ fun CalendarScreen(
         floatingActionButtonPosition = FabPosition.Center,
 
         bottomBar = {
-            BottomAppBar(
-                containerColor = Color.White
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    BottomNavItem(
-                        icon = Icons.AutoMirrored.Filled.ShowChart,
-                        label = "Trang chủ",
-                        isSelected = false,
-                        onClick = onNavigateHome
-                    )
-
-                    BottomNavItem(
-                        icon = Icons.Default.DateRange,
-                        label = "Lịch",
-                        isSelected = true,
-                        onClick = {}
-                    )
-
-                    Spacer(modifier = Modifier.width(48.dp))
-
-                    BottomNavItem(
-                        icon = Icons.Default.PieChart,
-                        label = "Thống kê",
-                        isSelected = false,
-                        onClick = onNavigateStatistics
-                    )
-
-                    BottomNavItem(
-                        icon = Icons.Default.Person,
-                        label = "Cá nhân",
-                        isSelected = false,
-                        onClick = onNavigateProfile
-                    )
-                }
-            }
+            AppBottomNavigation(
+                currentRoute = "calendar",
+                onHomeClick = onNavigateHome,
+                onCalendarClick = {},
+                onStatsClick = onNavigateStatistics,
+                onProfileClick = onNavigateProfile,
+                onAddClick = onNavigateAddExpense
+            )
         },
         containerColor = AppBackground
     ) { padding ->
@@ -195,7 +175,11 @@ fun CalendarScreen(
             }
 
             item {
-                TotalExpenseCard(String.format(Locale.getDefault(), "-%,.0fđ", uiState.totalAmount))
+                val prefix = if (uiState.totalAmount >= 0) "+" else "-"
+                TotalExpenseCard(
+                    total = String.format(Locale.getDefault(), "%s%,.0fđ", prefix, abs(uiState.totalAmount)),
+                    balance = uiState.totalAmount
+                )
             }
 
             item {
@@ -213,7 +197,7 @@ fun CalendarScreen(
                 showEditDialog = null
             },
             onDelete = {
-                viewModel.deleteExpense(showEditDialog!!.id)
+                viewModel.deleteExpense(showEditDialog!!.documentId)
                 showEditDialog = null
             }
         )
@@ -352,6 +336,10 @@ fun ExpenseItem(
     time: String,
     onClick: () -> Unit
 ) {
+    val isIncome = expense.type == "INCOME"
+    val color = if (isIncome) Color(0xFF4CAF50) else Color.Red
+    val prefix = if (isIncome) "+" else "-"
+
     Card(
         shape = RoundedCornerShape(18.dp),
         modifier = Modifier.clickable { onClick() }
@@ -366,13 +354,13 @@ fun ExpenseItem(
                 modifier = Modifier
                     .size(42.dp)
                     .background(
-                        getCategoryColor(expense.category),
+                        getCategoryColor(expense.categoryId),
                         CircleShape
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    getCategoryIcon(expense.category),
+                    getCategoryIcon(expense.categoryId),
                     null,
                     tint = Color.DarkGray
                 )
@@ -384,7 +372,7 @@ fun ExpenseItem(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    expense.category,
+                    getCategoryName(expense.categoryId),
                     fontWeight = FontWeight.SemiBold
                 )
 
@@ -396,8 +384,8 @@ fun ExpenseItem(
             }
 
             Text(
-                String.format(Locale.getDefault(), "-%,.0fđ", expense.amount),
-                color = Color.Red,
+                String.format(Locale.getDefault(), "%s%,.0fđ", prefix, expense.amount.toDouble()),
+                color = color,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -405,7 +393,7 @@ fun ExpenseItem(
 }
 
 @Composable
-fun TotalExpenseCard(total: String) {
+fun TotalExpenseCard(total: String, balance: Double) {
     Card(
         shape = RoundedCornerShape(18.dp)
     ) {
@@ -416,13 +404,13 @@ fun TotalExpenseCard(total: String) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                "Tổng chi tiêu",
+                "Số dư trong ngày",
                 fontWeight = FontWeight.SemiBold
             )
 
             Text(
                 total,
-                color = Color.Red,
+                color = if (balance >= 0) Color(0xFF4CAF50) else Color.Red,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -437,14 +425,15 @@ fun EditExpenseDialog(
     onDelete: () -> Unit
 ) {
     var amount by remember { mutableStateOf(expense.amount.toString()) }
-    var note by remember { mutableStateOf(expense.note) }
+    var note by remember { mutableStateOf(expense.description) }
+    val isIncome = expense.type == "INCOME"
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Chỉnh sửa chi tiêu") },
+        title = { Text(if (isIncome) "Chỉnh sửa thu nhập" else "Chỉnh sửa chi tiêu") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Danh mục: ${expense.category}", fontWeight = FontWeight.Bold)
+                Text("Danh mục: ${getCategoryName(expense.categoryId)}", fontWeight = FontWeight.Bold)
                 OutlinedTextField(
                     value = amount,
                     onValueChange = { amount = it },
@@ -460,8 +449,8 @@ fun EditExpenseDialog(
         confirmButton = {
             Button(onClick = {
                 val updated = expense.copy(
-                    amount = amount.toDoubleOrNull() ?: expense.amount,
-                    note = note
+                    amount = amount.toLongOrNull() ?: expense.amount,
+                    description = note
                 )
                 onConfirm(updated)
             }) {

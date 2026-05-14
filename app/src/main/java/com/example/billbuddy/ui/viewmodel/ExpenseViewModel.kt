@@ -1,5 +1,7 @@
 package com.example.billbuddy.ui.viewmodel
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.billbuddy.data.model.Expense
@@ -11,6 +13,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import com.google.firebase.Timestamp
+import java.time.LocalDate
+import java.time.ZoneId
+import java.util.Date
 import javax.inject.Inject
 
 data class ExpenseUiState(
@@ -34,13 +40,22 @@ class ExpenseViewModel @Inject constructor(
         observeExpenses()
     }
 
-    fun addExpense(date: String, category: String, amount: Double, note: String) {
+    fun addExpense(date: String, category: String, amount: Double, note: String, type: String = "EXPENSE") {
+        val parsedDate = try {
+            val localDate = LocalDate.parse(date)
+            val instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant()
+            Timestamp(Date.from(instant))
+        } catch (e: Exception) {
+            Timestamp.now()
+        }
+
         val expense = Expense(
-            date = date,
-            category = category,
-            amount = amount,
-            note = note,
-            createdAt = System.currentTimeMillis()
+            date = parsedDate,
+            categoryId = if (type == "INCOME") "Thu nhập" else category,
+            amount = amount.toLong(),
+            description = note,
+            type = type,
+            createdAt = Timestamp.now()
         )
 
         expenseRepository.addExpense(expense).onEach { result ->

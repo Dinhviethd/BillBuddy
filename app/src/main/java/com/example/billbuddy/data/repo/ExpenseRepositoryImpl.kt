@@ -3,10 +3,8 @@ package com.example.billbuddy.data.repo
 import com.example.billbuddy.data.model.Expense
 import com.example.billbuddy.utils.Resource
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -15,54 +13,38 @@ import javax.inject.Inject
 
 class ExpenseRepositoryImpl @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
-    private val firebaseDatabase: FirebaseDatabase
+    private val firestore: FirebaseFirestore,
 ) : ExpenseRepository {
 
+    private val userId: String
+        get() = firebaseAuth.currentUser?.uid ?: "xTPgr1YLscOiXamgRCqikOKaAdn1"
+
     override fun observeExpenses(): Flow<Resource<List<Expense>>> = callbackFlow {
-        val uid = firebaseAuth.currentUser?.uid ?: "xTPgr1YLscOiXamgRCqikOKaAdn1"
-        
-        val ref = firebaseDatabase.reference
-            .child("users")
-            .child(uid)
-            .child("expenses")
-
-        val listener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val items = snapshot.children.mapNotNull { child ->
-                    val value = child.getValue(Expense::class.java) ?: return@mapNotNull null
-                    val id = child.key ?: value.id
-                    value.copy(id = id)
+        val listener = firestore.collection("expenses")
+            .whereEqualTo("userId", userId)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    trySend(Resource.Error(error.message ?: "Unknown Error"))
+                    return@addSnapshotListener
                 }
-                trySend(Resource.Success(items.sortedByDescending { it.createdAt }))
+                if (snapshot != null) {
+                    val items = snapshot.toObjects(Expense::class.java)
+                    trySend(Resource.Success(items))
+                }
             }
-
-            override fun onCancelled(error: DatabaseError) {
-                trySend(Resource.Error(error.message))
-            }
-        }
-
-        ref.addValueEventListener(listener)
-
-        awaitClose { ref.removeEventListener(listener) }
+        awaitClose { listener.remove() }
     }.onStart { emit(Resource.Loading()) }
 
     override fun addExpense(expense: Expense): Flow<Resource<Unit>> = callbackFlow {
-        val uid = firebaseAuth.currentUser?.uid ?: "xTPgr1YLscOiXamgRCqikOKaAdn1"
-
-        val ref = firebaseDatabase.reference
-            .child("users")
-            .child(uid)
-            .child("expenses")
-
-        val key = ref.push().key
-        if (key == null) {
-            trySend(Resource.Error("Unable to generate expense id"))
-            close()
-            return@callbackFlow
+        val payload = if (expense.userId.isEmpty()) {
+            expense.copy(userId = userId)
+        } else {
+            expense
         }
 
-        val payload = expense.copy(id = key)
-        ref.child(key).setValue(payload)
+        firestore.collection("expenses")
+            .add(payload)
             .addOnSuccessListener {
                 trySend(Resource.Success(Unit))
                 close()
@@ -71,25 +53,19 @@ class ExpenseRepositoryImpl @Inject constructor(
                 trySend(Resource.Error(error.localizedMessage ?: "Unknown Error"))
                 close()
             }
-
         awaitClose { }
     }.onStart { emit(Resource.Loading()) }
 
     override fun updateExpense(expense: Expense): Flow<Resource<Unit>> = callbackFlow {
-        val uid = firebaseAuth.currentUser?.uid ?: "xTPgr1YLscOiXamgRCqikOKaAdn1"
-
-        if (expense.id.isEmpty()) {
+        if (expense.documentId.isEmpty()) {
             trySend(Resource.Error("Invalid expense id"))
             close()
             return@callbackFlow
         }
 
-        firebaseDatabase.reference
-            .child("users")
-            .child(uid)
-            .child("expenses")
-            .child(expense.id)
-            .setValue(expense)
+        firestore.collection("expenses")
+            .document(expense.documentId)
+            .set(expense)
             .addOnSuccessListener {
                 trySend(Resource.Success(Unit))
                 close()
@@ -103,14 +79,15 @@ class ExpenseRepositoryImpl @Inject constructor(
     }.onStart { emit(Resource.Loading()) }
 
     override fun deleteExpense(expenseId: String): Flow<Resource<Unit>> = callbackFlow {
-        val uid = firebaseAuth.currentUser?.uid ?: "xTPgr1YLscOiXamgRCqikOKaAdn1"
+        if (expenseId.isEmpty()) {
+            trySend(Resource.Error("Invalid expense id"))
+            close()
+            return@callbackFlow
+        }
 
-        firebaseDatabase.reference
-            .child("users")
-            .child(uid)
-            .child("expenses")
-            .child(expenseId)
-            .removeValue()
+        firestore.collection("expenses")
+            .document(expenseId)
+            .delete()
             .addOnSuccessListener {
                 trySend(Resource.Success(Unit))
                 close()
@@ -123,4 +100,3 @@ class ExpenseRepositoryImpl @Inject constructor(
         awaitClose { }
     }.onStart { emit(Resource.Loading()) }
 }
-

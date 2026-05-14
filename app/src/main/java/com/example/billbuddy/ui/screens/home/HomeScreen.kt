@@ -1,5 +1,7 @@
 package com.example.billbuddy.ui.screens.home
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,7 +10,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,10 +20,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.billbuddy.ui.components.AppBottomNavigation
 import com.example.billbuddy.ui.viewmodel.ExpenseViewModel
+import com.google.firebase.Timestamp
 import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.ZoneId
 import java.util.Locale
 import kotlin.math.abs
 
@@ -36,6 +40,7 @@ data class CategoryExpense(
     val percentColor: Color
 )
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -47,21 +52,28 @@ fun HomeScreen(
 ) {
     val expenseState by viewModel.expenseState.collectAsState()
     val expenses = expenseState.expenses
-    val currentMonth = remember { YearMonth.now() }
-    val previousMonth = remember { currentMonth.minusMonths(1) }
-    val currentMonthExpenses = remember(expenses) {
+    
+    var selectedMonth by remember { mutableStateOf(YearMonth.now()) }
+    val previousMonth = remember(selectedMonth) { selectedMonth.minusMonths(1) }
+    
+    val currentMonthExpenses = remember(expenses, selectedMonth) {
         expenses.filter { expense ->
-            parseDate(expense.date)?.let { YearMonth.from(it) == currentMonth } == true
+            parseDate(expense.date)?.let { YearMonth.from(it) == selectedMonth } == true
         }
     }
-    val previousMonthExpenses = remember(expenses) {
+    val previousMonthExpenses = remember(expenses, selectedMonth) {
         expenses.filter { expense ->
             parseDate(expense.date)?.let { YearMonth.from(it) == previousMonth } == true
         }
     }
-    val totalCurrentMonth = remember(currentMonthExpenses) {
-        currentMonthExpenses.sumOf { it.amount }
+
+    val totalCurrentMonthExpense = remember(currentMonthExpenses) {
+        currentMonthExpenses.filter { it.type == "EXPENSE" }.sumOf { it.amount }
     }
+    val totalCurrentMonthIncome = remember(currentMonthExpenses) {
+        currentMonthExpenses.filter { it.type == "INCOME" }.sumOf { it.amount }
+    }
+    val balance = totalCurrentMonthIncome - totalCurrentMonthExpense
 
     val categoryDefinitions = remember {
         listOf(
@@ -76,40 +88,49 @@ fun HomeScreen(
     val categories = remember(currentMonthExpenses, previousMonthExpenses) {
         categoryDefinitions.map { def ->
             val currentTotal = currentMonthExpenses
-                .filter { it.category == def.name }
+                .filter { it.categoryId == def.name && it.type == "EXPENSE" }
                 .sumOf { it.amount }
             val previousTotal = previousMonthExpenses
-                .filter { it.category == def.name }
+                .filter { it.categoryId == def.name && it.type == "EXPENSE" }
                 .sumOf { it.amount }
-            val transactionCount = currentMonthExpenses.count { it.category == def.name }
+            val transactionCount = currentMonthExpenses.count { it.categoryId == def.name && it.type == "EXPENSE" }
 
             CategoryExpense(
                 name = def.name,
                 transactionCount = transactionCount,
-                amount = formatExpenseAmount(currentTotal),
-                percentage = buildPercentText(currentTotal, previousTotal),
+                amount = formatExpenseAmount(currentTotal.toDouble()),
+                percentage = buildPercentText(currentTotal.toDouble(), previousTotal.toDouble()),
                 icon = def.icon,
                 iconColor = def.iconColor,
-                percentColor = percentColor(currentTotal, previousTotal)
+                percentColor = percentColor(currentTotal.toDouble(), previousTotal.toDouble())
             )
         }
     }
 
     Scaffold(
         topBar = {
-            HomeTopBar(
-                totalExpense = totalCurrentMonth,
-                totalIncome = 0.0,
-                balance = -totalCurrentMonth
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        "Tổng Quan Thu Chi",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                actions = {
+                    IconButton(onClick = {}) {
+                        Icon(Icons.Default.MoreVert, null)
+                    }
+                }
             )
         },
         bottomBar = {
-            HomeBottomNavigation(
+            AppBottomNavigation(
+                currentRoute = "home",
                 onHomeClick = {},
                 onCalendarClick = onNavigateToCalendar,
-                onAddClick = onNavigateToAddExpense,
                 onStatsClick = onNavigateToStatistics,
-                onProfileClick = onNavigateToProfile
+                onProfileClick = onNavigateToProfile,
+                onAddClick = onNavigateToAddExpense
             )
         },
         floatingActionButton = {
@@ -151,16 +172,39 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    TabButton(text = "Tháng trước", isSelected = false, modifier = Modifier.weight(1f))
-                    TabButton(text = "Tháng này", isSelected = true, modifier = Modifier.weight(1f))
+                    TabButton(
+                        text = "Tháng ${previousMonth.monthValue}",
+                        isSelected = false,
+                        modifier = Modifier.weight(1f),
+                        onClick = { selectedMonth = previousMonth }
+                    )
+                    TabButton(
+                        text = "Tháng ${selectedMonth.monthValue}",
+                        isSelected = true,
+                        modifier = Modifier.weight(1f),
+                        onClick = { }
+                    )
+                    TabButton(
+                        text = "Tháng ${(selectedMonth.plusMonths(1)).monthValue}",
+                        isSelected = false,
+                        modifier = Modifier.weight(1f),
+                        onClick = { selectedMonth = selectedMonth.plusMonths(1) }
+                    )
                 }
             }
 
+            item {
+                HomeSummaryHeader(
+                    totalExpense = totalCurrentMonthExpense.toDouble(),
+                    totalIncome = totalCurrentMonthIncome.toDouble(),
+                    balance = balance.toDouble()
+                )
+            }
 
             item {
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
                     Text(
-                        text = "Chi tiêu tháng ${currentMonth.monthValue}/${currentMonth.year}",
+                        text = "Chi tiêu tháng ${selectedMonth.monthValue}/${selectedMonth.year}",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
                     Text(
@@ -177,12 +221,15 @@ fun HomeScreen(
             }
 
             item {
-                FinancialOverviewCard(totalExpense = totalCurrentMonth)
+                FinancialOverviewCard(
+                    totalExpense = totalCurrentMonthExpense.toDouble(),
+                    totalIncome = totalCurrentMonthIncome.toDouble()
+                )
             }
 
-            item {
-                StatisticsInfoBox()
-            }
+//            item {
+//                StatisticsInfoBox()
+//            }
             
             item { Spacer(modifier = Modifier.height(40.dp)) }
         }
@@ -190,73 +237,54 @@ fun HomeScreen(
 }
 
 @Composable
-fun HomeTopBar(
+fun HomeSummaryHeader(
     totalExpense: Double,
     totalIncome: Double,
     balance: Double
 ) {
-    val now = remember { YearMonth.now() }
-    Surface(
-        color = Color(0xFF212121),
-        contentColor = Color.White
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF212121))
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Icon(Icons.Default.Menu, contentDescription = "Menu")
-                Text(
-                    text = "Sổ Thu Chi",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                )
-                Row {
-                    Icon(Icons.Default.Search, contentDescription = "Search")
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Icon(Icons.Default.CalendarMonth, contentDescription = "Calendar")
-                }
-            }
-
+            Text("Số dư hiện tại", color = Color.Gray, fontSize = 14.sp)
+            Text(
+                formatCurrency(balance),
+                color = Color.White,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
+            )
+            
             Spacer(modifier = Modifier.height(16.dp))
-
+            
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Column {
-                    Text(now.year.toString(), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Thg ${now.monthValue}", style = MaterialTheme.typography.titleLarge)
-                        Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                    }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Thu nhập", color = Color.Gray, fontSize = 12.sp)
+                    Text(formatNumber(totalIncome), color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
                 }
-
-                HeaderStat(label = "Chi tiêu", value = formatNumber(totalExpense))
-                HeaderStat(label = "Thu nhập", value = formatNumber(totalIncome))
-                HeaderStat(label = "Số dư", value = formatNumber(balance))
+                VerticalDivider(modifier = Modifier.height(30.dp), color = Color.Gray)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Chi tiêu", color = Color.Gray, fontSize = 12.sp)
+                    Text(formatNumber(totalExpense), color = Color(0xFFF44336), fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
 }
 
 @Composable
-fun HeaderStat(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.End) {
-        Text(label, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-        Text(value, style = MaterialTheme.typography.titleMedium)
-    }
-}
-
-@Composable
-fun TabButton(text: String, isSelected: Boolean, modifier: Modifier = Modifier) {
+fun TabButton(text: String, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Surface(
-        modifier = modifier.height(40.dp),
+        modifier = modifier
+            .height(40.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(8.dp),
         color = if (isSelected) Color(0xFFE8B931) else Color(0xFFF5F5F5)
     ) {
@@ -312,8 +340,8 @@ fun ExpenseCategoryCard(category: CategoryExpense) {
 }
 
 @Composable
-fun FinancialOverviewCard(totalExpense: Double, startBalance: Double = 0.0) {
-    val endBalance = startBalance - totalExpense
+fun FinancialOverviewCard(totalExpense: Double, totalIncome: Double) {
+    val endBalance = totalIncome - totalExpense
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -328,8 +356,8 @@ fun FinancialOverviewCard(totalExpense: Double, startBalance: Double = 0.0) {
 
             OverviewRow(
                 Icons.Default.ArrowUpward,
-                "Số dư đầu tháng",
-                "+${formatCurrency(startBalance)}",
+                "Tổng thu nhập",
+                "+${formatCurrency(totalIncome)}",
                 Color(0xFF4CAF50)
             )
             Spacer(modifier = Modifier.height(12.dp))
@@ -409,59 +437,18 @@ fun StatisticsInfoBox() {
     }
 }
 
-@Composable
-fun HomeBottomNavigation(
-    onHomeClick: () -> Unit,
-    onCalendarClick: () -> Unit,
-    onAddClick: () -> Unit,
-    onStatsClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-    BottomAppBar(
-        containerColor = Color.White,
-        tonalElevation = 8.dp,
-        actions = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                BottomNavItem(Icons.AutoMirrored.Filled.ShowChart, "Trang chủ", true, onHomeClick)
-                BottomNavItem(Icons.Default.DateRange, "Lịch", false, onCalendarClick)
-
-                Spacer(modifier = Modifier.width(48.dp))
-                
-                BottomNavItem(Icons.Default.PieChart, "Thống kê", false, onStatsClick)
-                BottomNavItem(Icons.Default.Person, "Cá nhân", false, onProfileClick)
-            }
-        }
-    )
-}
-
-@Composable
-fun BottomNavItem(icon: ImageVector, label: String, isSelected: Boolean, onClick: () -> Unit) {
-    val color = if (isSelected) Color(0xFFD47500) else Color.Gray
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable { onClick() }
-    ) {
-        Icon(icon, contentDescription = label, tint = color)
-        Text(label, style = MaterialTheme.typography.labelSmall, color = color)
-    }
-}
-
 private data class CategoryUiDefinition(
     val name: String,
     val icon: ImageVector,
     val iconColor: Color
 )
 
-private fun parseDate(value: String): LocalDate? {
-    return runCatching { LocalDate.parse(value) }.getOrNull()
+private fun parseDate(timestamp: Timestamp?): LocalDate? {
+    return timestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDate()
 }
 
 private fun formatNumber(value: Double): String {
-    val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
+    val formatter = NumberFormat.getNumberInstance(Locale.forLanguageTag("vi-VN"))
     formatter.maximumFractionDigits = 0
     formatter.minimumFractionDigits = 0
     return formatter.format(value)
@@ -491,4 +478,3 @@ private fun percentColor(current: Double, previous: Double): Color {
     }
     return if (current <= previous) Color(0xFF4CAF50) else Color(0xFFF44336)
 }
-

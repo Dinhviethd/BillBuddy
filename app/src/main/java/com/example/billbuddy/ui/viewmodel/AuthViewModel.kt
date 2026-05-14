@@ -27,6 +27,9 @@ class AuthViewModel @Inject constructor(
     private val _updateState = mutableStateOf<Resource<Unit>?>(null)
     val updateState: State<Resource<Unit>?> = _updateState
 
+    private val _changePasswordState = mutableStateOf<Resource<Unit>?>(null)
+    val changePasswordState: State<Resource<Unit>?> = _changePasswordState
+
     init {
         currentUser?.let { 
             getUserData(it.uid)
@@ -77,5 +80,15 @@ class AuthViewModel @Inject constructor(
     fun logout() {
         authRepository.logout()
         _authState.value = null
+    }
+
+    fun changePassword(newPassword: String) {
+        authRepository.changePassword(newPassword).onEach { result ->
+            _changePasswordState.value = result
+        }.launchIn(viewModelScope)
+    }
+
+    fun resetChangePasswordState() {
+        _changePasswordState.value = null
     }
 }

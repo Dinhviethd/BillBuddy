@@ -12,6 +12,7 @@ import com.example.billbuddy.ui.screens.home.HomeScreen
 import com.example.billbuddy.ui.screens.statistics.StatisticsScreen
 import com.example.billbuddy.ui.screens.settings.ProfileScreen
 import com.example.billbuddy.ui.screens.settings.EditProfileScreen
+import com.example.billbuddy.ui.screens.settings.ChangePasswordScreen
 import com.example.billbuddy.ui.screens.calendar.CalendarScreen
 import com.example.billbuddy.ui.screens.debt.DebtListScreen
 import com.example.billbuddy.ui.screens.debt.AddDebtScreen
@@ -127,6 +128,9 @@ fun NavGraph(navController: NavHostController) {
                 onNavigateToEditProfile = {
                     navController.navigate(Screen.EditProfile.route)
                 },
+                onNavigateToChangePassword = {
+                    navController.navigate(Screen.ChangePassword.route)
+                },
                 onNavigateToGroups = {
                     navController.navigate(Screen.GroupList.route)
                 },
@@ -143,6 +147,12 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(Screen.EditProfile.route) {
             EditProfileScreen(
+                viewModel = authViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.ChangePassword.route) {
+            ChangePasswordScreen(
                 viewModel = authViewModel,
                 onNavigateBack = { navController.popBackStack() }
             )

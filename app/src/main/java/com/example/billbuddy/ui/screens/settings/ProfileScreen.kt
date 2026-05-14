@@ -42,6 +42,7 @@ fun ProfileScreen(
     onNavigateToAddExpense: () -> Unit,
     onNavigateToStatistics: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
+    onNavigateToChangePassword: () -> Unit,
     onNavigateToGroups: () -> Unit,
     onNavigateToDebts: () -> Unit,
     onSignOut: () -> Unit
@@ -124,7 +125,8 @@ fun ProfileScreen(
                         iconBgColor = Color(0xFFE1BEE7),
                         iconTint = Color(0xFF7B1FA2),
                         title = "Đổi mật khẩu",
-                        subtitle = "Cập nhật bảo mật tài khoản"
+                        subtitle = "Cập nhật bảo mật tài khoản",
+                        onClick = onNavigateToChangePassword
                     )
                 )
                 SettingSection(title = "Tài khoản", items = accountItems)

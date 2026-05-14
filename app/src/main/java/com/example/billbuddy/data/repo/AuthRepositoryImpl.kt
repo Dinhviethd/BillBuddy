@@ -63,6 +63,25 @@ class AuthRepositoryImpl @Inject constructor(
         firebaseAuth.signOut()
     }
 
+    override fun changePassword(newPassword: String): Flow<Resource<Unit>> = callbackFlow {
+        val user = firebaseAuth.currentUser
+        if (user != null) {
+            user.updatePassword(newPassword)
+                .addOnSuccessListener {
+                    trySend(Resource.Success(Unit))
+                    close()
+                }
+                .addOnFailureListener {
+                    trySend(Resource.Error(it.localizedMessage ?: "Failed to change password"))
+                    close()
+                }
+        } else {
+            trySend(Resource.Error("User not logged in"))
+            close()
+        }
+        awaitClose { }
+    }.onStart { emit(Resource.Loading()) }
+
     override fun updateUserProfile(user: User): Flow<Resource<Unit>> = callbackFlow {
         firestore.collection("users").document(user.documentId)
             .set(user)

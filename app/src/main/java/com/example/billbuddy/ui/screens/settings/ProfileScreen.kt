@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import com.example.billbuddy.navigation.Screen
 import com.example.billbuddy.ui.components.AppBottomNavigation
 import com.example.billbuddy.ui.viewmodel.AuthViewModel
+import com.example.billbuddy.utils.Resource
 
 data class SettingItem(
     val icon: ImageVector,
@@ -41,6 +42,9 @@ fun ProfileScreen(
     onNavigateToAddExpense: () -> Unit,
     onNavigateToStatistics: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
+    onNavigateToChangePassword: () -> Unit,
+    onNavigateToGroups: () -> Unit,
+    onNavigateToDebts: () -> Unit,
     onSignOut: () -> Unit
 ) {
     var showSignOutDialog by remember { mutableStateOf(false) }
@@ -89,30 +93,40 @@ fun ProfileScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            item { ProfileCard(onEditClick = onNavigateToEditProfile) }
+            item { 
+                val userData = (viewModel.userData.value as? Resource.Success)?.data
+                ProfileCard(
+                    user = userData,
+                    firebaseUser = viewModel.currentUser,
+                    onEditClick = onNavigateToEditProfile
+                ) 
+            }
 
             item {
                 val accountItems = listOf(
                     SettingItem(
-                        icon = Icons.Default.AccountBalanceWallet,
+                        icon = Icons.Default.Group,
                         iconBgColor = Color(0xFFBBDEFB),
                         iconTint = Color(0xFF1976D2),
-                        title = "Quản lý ví",
-                        subtitle = "3 ví đang hoạt động"
+                        title = "Nhóm",
+                        subtitle = "Quản lý chi tiêu chung",
+                        onClick = onNavigateToGroups
                     ),
                     SettingItem(
-                        icon = Icons.Default.Label,
+                        icon = Icons.Default.ReceiptLong,
                         iconBgColor = Color(0xFFC8E6C9),
                         iconTint = Color(0xFF388E3C),
-                        title = "Danh mục chi tiêu",
-                        subtitle = "Tùy chỉnh danh mục"
+                        title = "Khoản nợ",
+                        subtitle = "Theo dõi nợ và cho vay",
+                        onClick = onNavigateToDebts
                     ),
                     SettingItem(
-                        icon = Icons.Default.Autorenew,
+                        icon = Icons.Default.LockReset,
                         iconBgColor = Color(0xFFE1BEE7),
                         iconTint = Color(0xFF7B1FA2),
-                        title = "Giao dịch định kỳ",
-                        subtitle = "Quản lý thu chi tự động"
+                        title = "Đổi mật khẩu",
+                        subtitle = "Cập nhật bảo mật tài khoản",
+                        onClick = onNavigateToChangePassword
                     )
                 )
                 SettingSection(title = "Tài khoản", items = accountItems)
@@ -133,13 +147,6 @@ fun ProfileScreen(
                         iconTint = Color(0xFFC62828),
                         title = "Bảo mật",
                         subtitle = "Mật khẩu & bảo vệ"
-                    ),
-                    SettingItem(
-                        icon = Icons.Default.CloudUpload,
-                        iconBgColor = Color(0xFFB2EBF2),
-                        iconTint = Color(0xFF00838F),
-                        title = "Sao lưu & Khôi phục",
-                        subtitle = "Đồng bộ dữ liệu"
                     ),
                     SettingItem(
                         icon = Icons.Default.Language,
@@ -180,7 +187,17 @@ fun ProfileTopBar() {
 }
 
 @Composable
-fun ProfileCard(onEditClick: () -> Unit) {
+fun ProfileCard(
+    user: com.example.billbuddy.data.model.User?,
+    firebaseUser: com.google.firebase.auth.FirebaseUser?,
+    onEditClick: () -> Unit
+) {
+    val displayName = user?.displayName ?: firebaseUser?.displayName ?: "Người dùng"
+    val email = user?.email ?: firebaseUser?.email ?: "Chưa cập nhật email"
+    val initials = if (displayName.isNotBlank()) {
+        displayName.split(" ").filter { it.isNotEmpty() }.take(2).map { it[0] }.joinToString("").uppercase()
+    } else "BB"
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -201,7 +218,7 @@ fun ProfileCard(onEditClick: () -> Unit) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "BB",
+                    text = initials,
                     color = Color.White,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
@@ -212,11 +229,11 @@ fun ProfileCard(onEditClick: () -> Unit) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Nguyễn Văn A",
+                    text = displayName,
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
                 Text(
-                    text = "nguyenvana@email.com",
+                    text = email,
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )

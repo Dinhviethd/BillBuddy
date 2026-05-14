@@ -2,6 +2,10 @@ package com.example.billbuddy.di
 
 import com.example.billbuddy.data.repo.AuthRepository
 import com.example.billbuddy.data.repo.AuthRepositoryImpl
+import com.example.billbuddy.data.repo.DebtRepository
+import com.example.billbuddy.data.repo.DebtRepositoryImpl
+import com.example.billbuddy.data.repo.UserRepository
+import com.example.billbuddy.data.repo.UserRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -17,4 +21,16 @@ abstract class RepositoryModule {
     abstract fun bindAuthRepository(
         authRepositoryImpl: AuthRepositoryImpl
     ): AuthRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindDebtRepository(
+        debtRepositoryImpl: DebtRepositoryImpl
+    ): DebtRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserRepository(
+        userRepositoryImpl: UserRepositoryImpl
+    ): UserRepository
 }

@@ -15,7 +15,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.billbuddy.data.model.User
 import com.example.billbuddy.ui.viewmodel.AuthViewModel
+import com.example.billbuddy.utils.Resource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,9 +25,25 @@ fun EditProfileScreen(
     viewModel: AuthViewModel,
     onNavigateBack: () -> Unit
 ) {
-    var displayName by remember { mutableStateOf("Nguyễn Văn A") }
-    var email by remember { mutableStateOf("nguyenvana@email.com") }
-    var phone by remember { mutableStateOf("0123456789") }
+    val userDataResult = viewModel.userData.value
+    val currentUser = viewModel.currentUser
+    val existingUser = (userDataResult as? Resource.Success)?.data
+
+    var displayName by remember { mutableStateOf(existingUser?.displayName ?: currentUser?.displayName ?: "") }
+    var email by remember { mutableStateOf(existingUser?.email ?: currentUser?.email ?: "") }
+    var phone by remember { mutableStateOf(existingUser?.phoneNumber ?: "") }
+
+    val updateState = viewModel.updateState.value
+
+    LaunchedEffect(updateState) {
+        if (updateState is Resource.Success) {
+            onNavigateBack()
+        }
+    }
+
+    val initials = if (displayName.isNotBlank()) {
+        displayName.split(" ").filter { it.isNotEmpty() }.take(2).map { it[0] }.joinToString("").uppercase()
+    } else "BB"
 
     Scaffold(
         topBar = {
@@ -37,7 +55,22 @@ fun EditProfileScreen(
                     }
                 },
                 actions = {
-                    TextButton(onClick = { /* Save logic */ }) {
+                    TextButton(
+                        onClick = {
+                            currentUser?.let {
+                                val updatedUser = User(
+                                    documentId = it.uid,
+                                    email = email,
+                                    displayName = displayName,
+                                    phoneNumber = phone,
+                                    createdAt = existingUser?.createdAt,
+                                    updatedAt = com.google.firebase.Timestamp.now()
+                                )
+                                viewModel.updateProfile(updatedUser)
+                            }
+                        },
+                        enabled = updateState !is Resource.Loading
+                    ) {
                         Text("Lưu", fontWeight = FontWeight.Bold, color = Color(0xFFD47500))
                     }
                 }
@@ -53,31 +86,19 @@ fun EditProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Avatar section
-            Box(contentAlignment = Alignment.BottomEnd) {
-                Box(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFE8B931)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("BB", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.Bold)
-                }
-                Surface(
-                    modifier = Modifier.size(32.dp),
-                    shape = CircleShape,
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFE8B931)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = initials,
                     color = Color.White,
-                    tonalElevation = 4.dp
-                ) {
-                    IconButton(onClick = { }) {
-                        Icon(
-                            Icons.Default.CameraAlt,
-                            contentDescription = "Change avatar",
-                            modifier = Modifier.size(16.dp),
-                            tint = Color.Gray
-                        )
-                    }
-                }
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -117,14 +138,31 @@ fun EditProfileScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { /* Update logic */ },
+                onClick = {
+                    currentUser?.let {
+                        val updatedUser = User(
+                            documentId = it.uid,
+                            email = email,
+                            displayName = displayName,
+                            phoneNumber = phone,
+                            createdAt = existingUser?.createdAt,
+                            updatedAt = com.google.firebase.Timestamp.now()
+                        )
+                        viewModel.updateProfile(updatedUser)
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
+                enabled = updateState !is Resource.Loading,
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD47500))
             ) {
-                Text("Cập nhật thông tin", fontWeight = FontWeight.Bold)
+                if (updateState is Resource.Loading) {
+                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                } else {
+                    Text("Cập nhật thông tin", fontWeight = FontWeight.Bold)
+                }
             }
         }
     }

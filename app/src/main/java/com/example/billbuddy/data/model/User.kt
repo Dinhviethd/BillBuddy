@@ -8,6 +8,7 @@ data class User(
     val documentId: String = "",
     val email: String = "",
     val displayName: String = "",
+    val phoneNumber: String = "",
     val photoURL: String = "",
     val createdAt: Timestamp? = null,
     val updatedAt: Timestamp? = null

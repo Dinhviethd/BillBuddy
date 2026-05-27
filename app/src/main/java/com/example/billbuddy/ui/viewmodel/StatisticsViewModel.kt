@@ -3,8 +3,11 @@ package com.example.billbuddy.ui.viewmodel
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.billbuddy.data.model.Category
+import com.example.billbuddy.data.model.CategoryType
 import com.example.billbuddy.data.model.Expense
 import com.example.billbuddy.data.repo.AuthRepository
+import com.example.billbuddy.data.repo.CategoryRepository
 import com.example.billbuddy.data.repo.ExpenseRepository
 import com.example.billbuddy.utils.Resource
 import com.google.firebase.Timestamp
@@ -14,15 +17,15 @@ import java.time.ZoneId
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @Immutable
 data class CategorySummary(
     val name: String,
-    val amount: Double
+    val amount: Double,
 )
 
 @Immutable
@@ -31,26 +34,30 @@ data class StatisticsUiState(
     val errorMessage: String? = null,
     val fromDate: LocalDate = LocalDate.now(),
     val toDate: LocalDate = LocalDate.now(),
-    val totalAmount: Double = 0.0,
+    val totalIncome: Double = 0.0,
+    val totalExpense: Double = 0.0,
+    val balance: Double = 0.0,
     val expenseCount: Int = 0,
     val categorySummaries: List<CategorySummary> = emptyList(),
-    val hasData: Boolean = false
+    val hasData: Boolean = false,
 )
 
 @HiltViewModel
 class StatisticsViewModel @Inject constructor(
     private val expenseRepository: ExpenseRepository,
+    private val categoryRepository: CategoryRepository,
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val zoneId: ZoneId = ZoneId.systemDefault()
     private var allExpenses: List<Expense> = emptyList()
+    private var categories: List<Category> = emptyList()
 
     private val _uiState = MutableStateFlow(StatisticsUiState())
     val uiState: StateFlow<StatisticsUiState> = _uiState.asStateFlow()
 
     init {
-        observeExpenses()
+        observeData()
     }
 
     fun setTodayRange() {
@@ -75,80 +82,80 @@ class StatisticsViewModel @Inject constructor(
         recalculate()
     }
 
-    private fun observeExpenses() {
+    private fun observeData() {
         val userId = authRepository.currentUser?.uid
         if (userId.isNullOrBlank()) {
             _uiState.update {
                 it.copy(
                     isLoading = false,
-                    errorMessage = null,
-                    totalAmount = 0.0,
-                    expenseCount = 0,
-                    categorySummaries = emptyList(),
+                    errorMessage = "User not logged in",
                     hasData = false
                 )
             }
             return
         }
 
-        expenseRepository.observeExpenses(userId)
-            .onEach { resource ->
-                when (resource) {
-                    is Resource.Loading -> {
-                        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-                    }
-
-                    is Resource.Success -> {
-                        allExpenses = resource.data ?: emptyList()
-                        _uiState.update { it.copy(isLoading = false, errorMessage = null) }
-                        recalculate()
-                    }
-
-                    is Resource.Error -> {
-                        allExpenses = emptyList()
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                errorMessage = resource.message,
-                                totalAmount = 0.0,
-                                expenseCount = 0,
-                                categorySummaries = emptyList(),
-                                hasData = false
-                            )
-                        }
-                    }
+        combine(
+            expenseRepository.observeExpenses(),
+            categoryRepository.getCategories(userId)
+        ) { expenseRes, categoryRes ->
+            when {
+                (expenseRes is Resource.Loading || categoryRes is Resource.Loading) -> {
+                    _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+                }
+                expenseRes is Resource.Error -> {
+                    _uiState.update { it.copy(isLoading = false, errorMessage = expenseRes.message) }
+                }
+                categoryRes is Resource.Error -> {
+                    _uiState.update { it.copy(isLoading = false, errorMessage = categoryRes.message) }
+                }
+                expenseRes is Resource.Success && categoryRes is Resource.Success -> {
+                    allExpenses = expenseRes.data.orEmpty()
+                    categories = categoryRes.data.orEmpty()
+                    _uiState.update { it.copy(isLoading = false, errorMessage = null) }
+                    recalculate()
                 }
             }
-            .launchIn(viewModelScope)
+        }.launchIn(viewModelScope)
     }
 
     private fun recalculate() {
         val currentState = _uiState.value
-        val startDate = minOf(currentState.fromDate, currentState.toDate)
-        val endDate = maxOf(currentState.fromDate, currentState.toDate)
+        val startDate = if (currentState.fromDate.isBefore(currentState.toDate) || currentState.fromDate == currentState.toDate) currentState.fromDate else currentState.toDate
+        val endDate = if (currentState.fromDate.isAfter(currentState.toDate) || currentState.fromDate == currentState.toDate) currentState.fromDate else currentState.toDate
 
         val filteredExpenses = allExpenses.filter { expense ->
             val expenseDate = expense.date?.toLocalDate(zoneId)
             expenseDate != null && !expenseDate.isBefore(startDate) && !expenseDate.isAfter(endDate)
-        }.sortedByDescending { it.date?.seconds ?: 0L }
+        }
+
+        val categoryMap = categories.associateBy { it.documentId }
+
+        val totalIncome = filteredExpenses
+            .filter { categoryMap[it.categoryId]?.type == CategoryType.INCOME }
+            .sumOf { it.amount }.toDouble()
+
+        val totalExpense = filteredExpenses
+            .filter { categoryMap[it.categoryId]?.type == CategoryType.EXPENSE }
+            .sumOf { it.amount }.toDouble()
 
         val categorySummaries = filteredExpenses
-            .groupBy { expense ->
-                expense.categoryId.takeIf { it.isNotBlank() }
-                    ?: expense.description.takeIf { it.isNotBlank() }
-                    ?: "Khác"
-            }
-            .map { (categoryName, items) ->
+            .filter { categoryMap[it.categoryId]?.type == CategoryType.EXPENSE }
+            .groupBy { it.categoryId }
+            .map { (categoryId, items) ->
+                val categoryName = categoryMap[categoryId]?.name ?: "Khác"
                 CategorySummary(
                     name = categoryName,
-                    amount = items.sumOf { it.amount }
+                    amount = items.sumOf { it.amount }.toDouble()
                 )
             }
             .sortedByDescending { it.amount }
 
-        _uiState.update {
-            it.copy(
-                totalAmount = filteredExpenses.sumOf { it.amount },
+        _uiState.update { state ->
+            state.copy(
+                totalIncome = totalIncome,
+                totalExpense = totalExpense,
+                balance = totalIncome - totalExpense,
                 expenseCount = filteredExpenses.size,
                 categorySummaries = categorySummaries,
                 hasData = filteredExpenses.isNotEmpty(),
@@ -162,4 +169,3 @@ class StatisticsViewModel @Inject constructor(
         return toDate().toInstant().atZone(zoneId).toLocalDate()
     }
 }
-

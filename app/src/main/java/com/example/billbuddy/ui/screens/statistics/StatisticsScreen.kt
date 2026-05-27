@@ -62,7 +62,7 @@ fun StatisticsScreen(
 ) {
     var fromDate by remember { mutableStateOf(LocalDate.now()) }
     var toDate by remember { mutableStateOf(LocalDate.now()) }
-    
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(

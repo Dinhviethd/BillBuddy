@@ -125,4 +125,25 @@ class CalendarViewModel @Inject constructor(
         val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
         return sdf.format(date)
     }
+
+    fun updateExpense(expense: Expense) {
+        expenseRepository.addExpense(expense).onEach { result ->
+            if (result is Resource.Success) {
+                _editState.value = Resource.Success(Unit)
+            } else if (result is Resource.Error) {
+                _editState.value = Resource.Error(result.message ?: "Update failed")
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    fun deleteExpense(expenseId: String) {
+        // TODO: Implement deleteExpense in Repository
+    }
+
+    private val _editState = MutableStateFlow<Resource<Unit>?>(null)
+    val editState: StateFlow<Resource<Unit>?> = _editState.asStateFlow()
+
+    fun clearEditState() {
+        _editState.value = null
+    }
 }

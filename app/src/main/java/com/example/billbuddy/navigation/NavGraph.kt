@@ -1,5 +1,7 @@
 package com.example.billbuddy.navigation
 
+import android.os.Build
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -10,6 +12,7 @@ import com.example.billbuddy.ui.screens.auth.RegisterScreen
 import com.example.billbuddy.ui.screens.expense.AddExpenseScreen
 import com.example.billbuddy.ui.screens.home.HomeScreen
 import com.example.billbuddy.ui.screens.statistics.StatisticsScreen
+import com.example.billbuddy.ui.viewmodel.AuthViewModel
 import com.example.billbuddy.ui.screens.settings.ProfileScreen
 import com.example.billbuddy.ui.screens.settings.EditProfileScreen
 import com.example.billbuddy.ui.screens.settings.ChangePasswordScreen

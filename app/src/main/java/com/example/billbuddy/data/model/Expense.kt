@@ -10,7 +10,6 @@ data class Expense(
     val description: String = "",
     val date: Timestamp? = null,
     val categoryId: String = "",
-    val type: String = "EXPENSE", // "EXPENSE" or "INCOME"
     val userId: String = "",
     val groupId: String? = null,
     val splitMethod: String? = null,

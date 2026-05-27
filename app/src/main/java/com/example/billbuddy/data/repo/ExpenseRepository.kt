@@ -8,3 +8,4 @@ interface ExpenseRepository {
     fun observeExpenses(): Flow<Resource<List<Expense>>>
     fun addExpense(expense: Expense): Flow<Resource<Unit>>
 }
+

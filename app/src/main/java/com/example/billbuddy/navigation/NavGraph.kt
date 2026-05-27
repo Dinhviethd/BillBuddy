@@ -19,15 +19,14 @@ import com.example.billbuddy.ui.screens.debt.AddDebtScreen
 import com.example.billbuddy.ui.screens.debt.DebtDetailScreen
 import com.example.billbuddy.ui.screens.group.GroupListScreen
 import com.example.billbuddy.ui.viewmodel.AuthViewModel
+import com.example.billbuddy.ui.viewmodel.CalendarViewModel
 import com.example.billbuddy.ui.viewmodel.DebtViewModel
 import com.example.billbuddy.ui.viewmodel.ExpenseViewModel
 
 @Composable
 fun NavGraph(navController: NavHostController) {
     val authViewModel: AuthViewModel = hiltViewModel()
-    val debtViewModel: DebtViewModel = hiltViewModel()
-    val expenseViewModel: ExpenseViewModel = hiltViewModel()
-    
+
     val startDestination = if (authViewModel.currentUser != null) Screen.Home.route else Screen.Login.route
     NavHost(
         navController = navController,
@@ -60,6 +59,7 @@ fun NavGraph(navController: NavHostController) {
             )
         }
         composable(Screen.Home.route) {
+            val expenseViewModel: ExpenseViewModel = hiltViewModel()
             HomeScreen(
                 viewModel = expenseViewModel,
                 onNavigateToAddExpense = { navController.navigate(Screen.AddExpense.route) },
@@ -70,6 +70,7 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(Screen.AddExpense.route) {
+            val expenseViewModel: ExpenseViewModel = hiltViewModel()
             AddExpenseScreen(
                 viewModel = expenseViewModel,
                 onNavigateBack = { navController.popBackStack() }
@@ -77,7 +78,9 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(Screen.Calendar.route) {
+            val calendarViewModel: CalendarViewModel = hiltViewModel()
             CalendarScreen(
+                viewModel = calendarViewModel,
                 onNavigateHome = {
                     navController.navigate(Screen.Home.route)
                 },
@@ -92,7 +95,7 @@ fun NavGraph(navController: NavHostController) {
                 }
             )
         }
-        
+
         composable(Screen.Statistics.route) {
             StatisticsScreen(
                 onNavigateToHome = {
@@ -105,7 +108,7 @@ fun NavGraph(navController: NavHostController) {
                 onNavigateToProfile = { navController.navigate(Screen.Profile.route) }
             )
         }
-        
+
         composable(Screen.Profile.route) {
             ProfileScreen(
                 viewModel = authViewModel,
@@ -139,25 +142,26 @@ fun NavGraph(navController: NavHostController) {
                     authViewModel.logout()
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Home.route) { inclusive = true }
+                        popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 }
             )
         }
-        
+
         composable(Screen.EditProfile.route) {
             EditProfileScreen(
                 viewModel = authViewModel,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
-        
+
         composable(Screen.ChangePassword.route) {
             ChangePasswordScreen(
                 viewModel = authViewModel,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
-        
+
         composable(Screen.GroupList.route) {
             GroupListScreen(
                 onNavigateBack = { navController.popBackStack() },
@@ -166,8 +170,9 @@ fun NavGraph(navController: NavHostController) {
                 }
             )
         }
-        
+
         composable(Screen.DebtList.route) {
+            val debtViewModel: DebtViewModel = hiltViewModel()
             DebtListScreen(
                 viewModel = debtViewModel,
                 onNavigateBack = { navController.popBackStack() },
@@ -179,8 +184,9 @@ fun NavGraph(navController: NavHostController) {
                 }
             )
         }
-        
+
         composable(Screen.AddDebt.route) {
+            val debtViewModel: DebtViewModel = hiltViewModel()
             AddDebtScreen(
                 viewModel = debtViewModel,
                 onNavigateBack = { navController.popBackStack() }
@@ -188,6 +194,7 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(Screen.DebtDetail.route) { backStackEntry ->
+            val debtViewModel: DebtViewModel = hiltViewModel()
             val debtId = backStackEntry.arguments?.getString("debtId") ?: ""
             DebtDetailScreen(
                 debtId = debtId,
@@ -197,3 +204,4 @@ fun NavGraph(navController: NavHostController) {
         }
     }
 }
+

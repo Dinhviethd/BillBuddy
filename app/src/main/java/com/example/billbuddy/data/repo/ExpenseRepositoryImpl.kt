@@ -65,4 +65,23 @@ class ExpenseRepositoryImpl @Inject constructor(
 
         awaitClose { }
     }.onStart { emit(Resource.Loading()) }
+
+    override fun observeGroupExpenses(groupId: String): Flow<Resource<List<Expense>>> = callbackFlow {
+        val query = firestore.collection("expenses")
+            .whereEqualTo("groupId", groupId)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+
+        val listener = query.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                trySend(Resource.Error(error.localizedMessage ?: "Unknown Error"))
+                return@addSnapshotListener
+            }
+            if (snapshot != null) {
+                val items = snapshot.toObjects(Expense::class.java)
+                trySend(Resource.Success(items))
+            }
+        }
+
+        awaitClose { listener.remove() }
+    }.onStart { emit(Resource.Loading()) }
 }

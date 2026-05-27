@@ -17,11 +17,15 @@ import com.example.billbuddy.ui.screens.calendar.CalendarScreen
 import com.example.billbuddy.ui.screens.debt.DebtListScreen
 import com.example.billbuddy.ui.screens.debt.AddDebtScreen
 import com.example.billbuddy.ui.screens.debt.DebtDetailScreen
+import com.example.billbuddy.ui.screens.group.AddGroupScreen
+import com.example.billbuddy.ui.screens.group.GroupDetailScreen
 import com.example.billbuddy.ui.screens.group.GroupListScreen
+import com.example.billbuddy.ui.screens.group.SplitExpenseScreen
 import com.example.billbuddy.ui.viewmodel.AuthViewModel
 import com.example.billbuddy.ui.viewmodel.CalendarViewModel
 import com.example.billbuddy.ui.viewmodel.DebtViewModel
 import com.example.billbuddy.ui.viewmodel.ExpenseViewModel
+import com.example.billbuddy.ui.viewmodel.GroupViewModel
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -163,11 +167,44 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(Screen.GroupList.route) {
+            val groupViewModel: GroupViewModel = hiltViewModel()
             GroupListScreen(
+                viewModel = groupViewModel,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToAddGroup = {
-                    // navController.navigate(Screen.AddGroup.route)
+                    navController.navigate(Screen.AddGroup.route)
+                },
+                onNavigateToGroupDetail = { groupId ->
+                    navController.navigate(Screen.GroupDetail.createRoute(groupId))
                 }
+            )
+        }
+
+        composable(Screen.GroupDetail.route) { backStackEntry ->
+            val groupViewModel: GroupViewModel = hiltViewModel()
+            val groupId = backStackEntry.arguments?.getString("groupId") ?: ""
+            GroupDetailScreen(
+                groupId = groupId,
+                viewModel = groupViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.AddGroup.route) {
+            val groupViewModel: GroupViewModel = hiltViewModel()
+            AddGroupScreen(
+                viewModel = groupViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.SplitExpense.route) { backStackEntry ->
+            val groupViewModel: GroupViewModel = hiltViewModel()
+            val expenseId = backStackEntry.arguments?.getString("expenseId") ?: ""
+            SplitExpenseScreen(
+                expenseId = expenseId,
+                viewModel = groupViewModel,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

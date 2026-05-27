@@ -28,4 +28,18 @@ class CategoryRepositoryImpl @Inject constructor(
             }
         awaitClose { listener.remove() }
     }.onStart { emit(Resource.Loading()) }
+
+    override fun addCategory(category: Category): Flow<Resource<Unit>> = callbackFlow {
+        firestore.collection("categories")
+            .add(category)
+            .addOnSuccessListener {
+                trySend(Resource.Success(Unit))
+                close()
+            }
+            .addOnFailureListener { error ->
+                trySend(Resource.Error(error.localizedMessage ?: "Unknown Error"))
+                close()
+            }
+        awaitClose { }
+    }.onStart { emit(Resource.Loading()) }
 }

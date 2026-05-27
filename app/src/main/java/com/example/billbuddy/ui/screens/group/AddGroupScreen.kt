@@ -15,17 +15,36 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.billbuddy.ui.viewmodel.GroupViewModel
+import com.example.billbuddy.utils.Resource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddGroupScreen(
-    onNavigateBack: () -> Unit,
-    onSaveGroup: (name: String, description: String) -> Unit
+    viewModel: GroupViewModel,
+    onNavigateBack: () -> Unit
 ) {
     var groupName by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var memberEmail by remember { mutableStateOf("") }
     var members by remember { mutableStateOf(listOf<String>()) }
+
+    val createStatus by viewModel.createGroupStatus.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(createStatus) {
+        when (createStatus) {
+            is Resource.Success -> {
+                viewModel.resetStatus()
+                onNavigateBack()
+            }
+            is Resource.Error -> {
+                snackbarHostState.showSnackbar(createStatus?.message ?: "Lỗi khi tạo nhóm")
+                viewModel.resetStatus()
+            }
+            else -> Unit
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -45,7 +64,8 @@ fun AddGroupScreen(
                     containerColor = Color.White
                 )
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -56,6 +76,7 @@ fun AddGroupScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // ... (rest of the UI remains the same, except for onSaveGroup call)
             // Group Info Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -243,14 +264,23 @@ fun AddGroupScreen(
                     Text("Hủy", color = Color.Gray)
                 }
                 Button(
-                    onClick = { onSaveGroup(groupName, description) },
+                    onClick = { 
+                        if (groupName.isNotBlank()) {
+                            viewModel.createGroup(groupName, description, members)
+                        }
+                    },
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E49E2)),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    enabled = createStatus !is Resource.Loading
                 ) {
-                    Text("Tạo nhóm", color = Color.White)
+                    if (createStatus is Resource.Loading) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
+                    } else {
+                        Text("Tạo nhóm", color = Color.White)
+                    }
                 }
             }
 

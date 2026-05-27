@@ -1,37 +1,17 @@
 package com.example.billbuddy.ui.screens.statistics
+
+import android.app.DatePickerDialog
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -39,30 +19,69 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.billbuddy.ui.components.AppBottomNavigation
-import com.example.billbuddy.ui.theme.LightAmber
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.billbuddy.navigation.Screen
+import com.example.billbuddy.ui.components.AppBottomNavigation
 import com.example.billbuddy.ui.theme.AmberDark
 import com.example.billbuddy.ui.theme.Beige
 import com.example.billbuddy.ui.theme.LightAmber
+import com.example.billbuddy.ui.viewmodel.CategorySummary
+import com.example.billbuddy.ui.viewmodel.StatisticsViewModel
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.*
+
+private val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+private val pieChartColors = listOf(
+    Color(0xFFFF7043),
+    Color(0xFF42A5F5),
+    Color(0xFFAB47BC),
+    Color(0xFF66BB6A),
+    Color(0xFFFFA726),
+    Color(0xFF26A69A),
+    Color(0xFFEC407A),
+    Color(0xFF7E57C2),
+    Color(0xFF9CCC65),
+    Color(0xFF26C6DA)
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun StatisticsScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToCalendar: () -> Unit,
     onNavigateToAddExpense: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    viewModel: StatisticsViewModel = hiltViewModel()
 ) {
-    var fromDate by remember { mutableStateOf(LocalDate.now()) }
-    var toDate by remember { mutableStateOf(LocalDate.now()) }
-    
+    val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
+    val fromDatePickerDialog = DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            viewModel.setFromDate(LocalDate.of(year, month + 1, dayOfMonth))
+        },
+        uiState.fromDate.year,
+        uiState.fromDate.monthValue - 1,
+        uiState.fromDate.dayOfMonth
+    )
+
+    val toDatePickerDialog = DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            viewModel.setToDate(LocalDate.of(year, month + 1, dayOfMonth))
+        },
+        uiState.toDate.year,
+        uiState.toDate.monthValue - 1,
+        uiState.toDate.dayOfMonth
+    )
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -111,57 +130,53 @@ fun StatisticsScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Date Range Selection
             DateRangeSection(
-                fromDate = fromDate,
-                toDate = toDate,
-                onFromDateChange = { fromDate = it },
-                onToDateChange = { toDate = it }
-            )
+                fromDate = uiState.fromDate,
+                toDate = uiState.toDate,
+                onFromClick = { fromDatePickerDialog.show() },
+                onToClick = { toDatePickerDialog.show() },
+                onTodayClick = { viewModel.setTodayRange() }
+            ) { viewModel.refresh() }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Summary Section
-            SummarySection()
+            if (uiState.isLoading) {
+                LoadingCard()
+            } else if (uiState.errorMessage != null) {
+                EmptyStateCard(text = uiState.errorMessage!!)
+            } else if (!uiState.hasData) {
+                EmptyStateCard(text = "Không có dữ liệu chi tiêu trong khoảng thời gian này.")
+            } else {
+                SummarySection(
+                    totalIncome = uiState.totalIncome,
+                    totalExpense = uiState.totalExpense,
+                    balance = uiState.balance,
+                    expenseCount = uiState.expenseCount
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // Pie Chart Section
-            PieChartSection()
+                PieChartSection(uiState.categorySummaries)
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // Category Details Section
-            CategoryDetailsSection()
+                CategoryDetailsSection(uiState.categorySummaries)
+            }
 
             Spacer(modifier = Modifier.height(80.dp))
         }
     }
 }
-@Composable
-private fun Header() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(LightAmber)
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Thống kê",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black
-        )
-    }
-}
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun DateRangeSection(
     fromDate: LocalDate,
     toDate: LocalDate,
+    onFromClick: () -> Unit,
+    onToClick: () -> Unit,
     onTodayClick: () -> Unit,
-    onRefreshClick: () -> Unit
+    onSearchClick: () -> Unit,
 ) {
     Card(
         modifier = Modifier
@@ -181,12 +196,12 @@ private fun DateRangeSection(
             Spacer(modifier = Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 DateBadge(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).clickable { onFromClick() },
                     label = "Từ",
                     value = fromDate.format(dateFormatter)
                 )
                 DateBadge(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).clickable { onToClick() },
                     label = "Đến",
                     value = toDate.format(dateFormatter)
                 )
@@ -201,13 +216,13 @@ private fun DateRangeSection(
                     modifier = Modifier
                         .weight(1f)
                         .height(40.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF5F5F5)),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text("Hôm nay", fontSize = 12.sp, color = Color.Black)
                 }
                 Button(
-                    onClick = onRefreshClick,
+                    onClick = onSearchClick,
                     modifier = Modifier
                         .weight(1f)
                         .height(40.dp),
@@ -225,11 +240,12 @@ private fun DateRangeSection(
         }
     }
 }
+
 @Composable
 private fun DateBadge(
     modifier: Modifier,
     label: String,
-    value: String
+    value: String,
 ) {
     Column(modifier = modifier) {
         Text(label, fontSize = 12.sp, color = Color.Gray)
@@ -242,16 +258,18 @@ private fun DateBadge(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(value)
-                Icon(Icons.Default.DateRange, contentDescription = null, tint = AmberDark)
+                Text(value, fontSize = 13.sp)
+                Icon(Icons.Default.DateRange, contentDescription = null, tint = AmberDark, modifier = Modifier.size(18.dp))
             }
         }
     }
 }
+
 @Composable
 private fun SummarySection(
-    totalAmount: Double,
-    categoryCount: Int,
+    totalIncome: Double,
+    totalExpense: Double,
+    balance: Double,
     expenseCount: Int
 ) {
     Card(
@@ -270,18 +288,27 @@ private fun SummarySection(
                 color = Color.Black,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 StatBox(
                     modifier = Modifier.weight(1f),
-                    value = formatMoney(totalAmount),
-                    label = "Tổng chi tiêu",
-                    valueColor = Color.Red
+                    value = formatMoney(totalIncome),
+                    label = "Thu nhập",
+                    valueColor = Color(0xFF4CAF50)
                 )
                 StatBox(
                     modifier = Modifier.weight(1f),
-                    value = categoryCount.toString(),
-                    label = "Danh mục",
-                    valueColor = Color.Black
+                    value = formatMoney(totalExpense),
+                    label = "Chi tiêu",
+                    valueColor = Color(0xFFE53935)
+                )
+                StatBox(
+                    modifier = Modifier.weight(1f),
+                    value = formatMoney(balance),
+                    label = "Số dư",
+                    valueColor = if (balance >= 0) Color(0xFF1976D2) else Color(0xFFE53935)
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -293,6 +320,7 @@ private fun SummarySection(
         }
     }
 }
+
 @Composable
 private fun StatBox(
     modifier: Modifier,
@@ -318,8 +346,9 @@ private fun StatBox(
         }
     }
 }
+
 @Composable
-private fun PieChartSection(categories: List<com.example.billbuddy.ui.viewmodel.CategorySummary>) {
+private fun PieChartSection(categories: List<CategorySummary>) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -343,14 +372,12 @@ private fun PieChartSection(categories: List<com.example.billbuddy.ui.viewmodel.
                     .fillMaxWidth()
                     .padding(bottom = 12.dp)
             )
-            val chartColors = categories.mapIndexed { index, _ ->
-                pieChartColors[index % pieChartColors.size]
-            }
+
             val total = categories.sumOf { it.amount }
+
             Box(
                 modifier = Modifier
-                    .size(200.dp)
-                    .clip(CircleShape),
+                    .size(180.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
@@ -359,28 +386,32 @@ private fun PieChartSection(categories: List<com.example.billbuddy.ui.viewmodel.
                         categories.forEachIndexed { index, category ->
                             val sweepAngle = ((category.amount / total) * 360f).toFloat()
                             drawArc(
-                                color = chartColors[index],
+                                color = pieChartColors[index % pieChartColors.size],
                                 startAngle = startAngle,
                                 sweepAngle = sweepAngle,
                                 useCenter = true
                             )
                             startAngle += sweepAngle
                         }
+                    } else {
+                        drawCircle(color = Color.LightGray, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 20f))
                     }
                 }
             }
+
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Đã có dữ liệu thống kê",
-                fontSize = 14.sp,
+                text = "Cơ cấu chi tiêu (%)",
+                fontSize = 12.sp,
                 color = Color.Gray,
                 textAlign = TextAlign.Center
             )
         }
     }
 }
+
 @Composable
-private fun CategoryDetailsSection(categories: List<com.example.billbuddy.ui.viewmodel.CategorySummary>) {
+private fun CategoryDetailsSection(categories: List<CategorySummary>) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -403,23 +434,24 @@ private fun CategoryDetailsSection(categories: List<com.example.billbuddy.ui.vie
                     color = pieChartColors[index % pieChartColors.size]
                 )
                 if (index != categories.lastIndex) {
-                    Divider(color = Color.LightGray, thickness = 1.dp)
+                    HorizontalDivider(color = Color(0xFFF5F5F5), thickness = 1.dp)
                 }
             }
         }
     }
 }
+
 @Composable
 private fun CategoryDetailItem(
-    category: com.example.billbuddy.ui.viewmodel.CategorySummary,
+    category: CategorySummary,
     color: Color
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -427,25 +459,26 @@ private fun CategoryDetailItem(
         ) {
             Box(
                 modifier = Modifier
-                    .size(12.dp)
+                    .size(10.dp)
                     .clip(CircleShape)
                     .background(color)
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(10.dp))
             Text(
                 text = category.name,
-                fontSize = 12.sp,
+                fontSize = 13.sp,
                 color = Color.Black
             )
         }
         Text(
             text = formatMoney(category.amount),
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
             color = Color.Black
         )
     }
 }
+
 @Composable
 private fun LoadingCard() {
     Card(
@@ -459,7 +492,7 @@ private fun LoadingCard() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(24.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -469,6 +502,7 @@ private fun LoadingCard() {
         }
     }
 }
+
 @Composable
 private fun EmptyStateCard(text: String) {
     Card(
@@ -483,13 +517,15 @@ private fun EmptyStateCard(text: String) {
             text = text,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp),
+                .padding(32.dp),
             fontSize = 14.sp,
             color = Color.Gray,
             textAlign = TextAlign.Center
         )
     }
 }
+
 private fun formatMoney(amount: Double): String {
-    return String.format(Locale("vi", "VN"), "%,.0fđ", amount)
+    val formatter = java.text.NumberFormat.getCurrencyInstance(Locale.forLanguageTag("vi-VN"))
+    return formatter.format(amount).replace("₫", "đ")
 }

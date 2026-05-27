@@ -20,25 +20,61 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import java.util.*
+import com.example.billbuddy.ui.viewmodel.ExpenseViewModel
+import com.example.billbuddy.utils.Resource
+import java.util.Calendar
+import java.util.Locale
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddExpenseScreen(
-    onNavigateBack: () -> Unit,
-    onSaveExpense: (date: String, category: String, amount: String, note: String) -> Unit
+    viewModel: ExpenseViewModel,
+    onNavigateBack: () -> Unit
 ) {
-    var date by remember { mutableStateOf("2024-04-29") }
-    var category by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("0") }
+    val initialDate = remember {
+        val calendar = Calendar.getInstance()
+        String.format(
+            Locale.US,
+            "%04d-%02d-%02d",
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH) + 1,
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
+    }
+
+    var date by remember { mutableStateOf(initialDate) }
+    var selectedCategoryId by remember { mutableStateOf("") }
+    var amount by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
+
+    val expenseState by viewModel.expenseState.collectAsState()
+    val categories = expenseState.categories
+
+    val saveState by viewModel.saveState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(saveState) {
+        when (val result = saveState) {
+            is Resource.Success -> {
+                viewModel.clearSaveState()
+                onNavigateBack()
+            }
+            is Resource.Error -> {
+                snackbarHostState.showSnackbar(result.message ?: "Lưu thất bại")
+                viewModel.clearSaveState()
+            }
+            else -> Unit
+        }
+    }
 
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
     val datePickerDialog = DatePickerDialog(
         context,
         { _, year, month, dayOfMonth ->
-            date = "$year-${(month + 1).toString().padStart(2, '0')}-${dayOfMonth.toString().padStart(2, '0')}"
+            date = String.format(Locale.US, "%04d-%02d-%02d", year, month + 1, dayOfMonth)
         },
         calendar.get(Calendar.YEAR),
         calendar.get(Calendar.MONTH),
@@ -59,10 +95,7 @@ fun AddExpenseScreen(
                 )
             )
         },
-        bottomBar = {
-
-
-        }
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -125,17 +158,28 @@ fun AddExpenseScreen(
 
                     Column {
                         Text("Danh mục chi tiêu", color = Color.Gray, fontSize = 14.sp)
-                        OutlinedTextField(
-                            value = category,
-                            onValueChange = { category = it },
-                            placeholder = { Text("Chọn danh mục") },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color.LightGray,
-                                unfocusedBorderColor = Color.LightGray
-                            )
+                        val selectedCategoryName = categories.find { it.documentId == selectedCategoryId }?.name ?: "Chưa chọn"
+                        Text(
+                            text = selectedCategoryName,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
                         )
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            categories.chunked(3).forEach { rowCategories ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    rowCategories.forEach { category ->
+                                        FilterChip(
+                                            selected = selectedCategoryId == category.documentId,
+                                            onClick = { selectedCategoryId = category.documentId },
+                                            label = { Text(category.name) }
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
 
 
@@ -188,12 +232,22 @@ fun AddExpenseScreen(
                             Text("Hủy", color = Color.Gray)
                         }
                         Button(
-                            onClick = { onSaveExpense(date, category, amount, note) },
+                            onClick = {
+                                val parsedAmount = amount.toDoubleOrNull() ?: 0.0
+                                if (selectedCategoryId.isBlank() || parsedAmount <= 0.0) {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Vui lòng nhập danh mục và số tiền hợp lệ")
+                                    }
+                                } else {
+                                    viewModel.addExpense(date, selectedCategoryId, parsedAmount, note.trim())
+                                }
+                            },
                             modifier = Modifier
                                 .weight(1f)
                                 .height(48.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E49E2)),
-                            shape = RoundedCornerShape(8.dp)
+                            shape = RoundedCornerShape(8.dp),
+                            enabled = saveState !is Resource.Loading
                         ) {
                             Text("Lưu", color = Color.White)
                         }

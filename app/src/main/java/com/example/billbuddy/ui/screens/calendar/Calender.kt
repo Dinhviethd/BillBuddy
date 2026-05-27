@@ -1,14 +1,16 @@
 package com.example.billbuddy.ui.screens.calendar
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,18 +18,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.billbuddy.data.model.CategoryType
 import com.example.billbuddy.navigation.Screen
 import com.example.billbuddy.ui.components.AppBottomNavigation
 import com.example.billbuddy.ui.theme.AppBackground
 import com.example.billbuddy.ui.theme.LightAmber
-
-data class DailyExpense(
-    val title: String,
-    val time: String,
-    val amount: String,
-    val icon: ImageVector,
-    val iconBg: Color
-)
+import com.example.billbuddy.ui.viewmodel.CalendarViewModel
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,46 +33,11 @@ fun CalendarScreen(
     onNavigateHome: () -> Unit,
     onNavigateAddExpense: () -> Unit,
     onNavigateStatistics: () -> Unit,
-    onNavigateProfile: () -> Unit
+    onNavigateProfile: () -> Unit,
+    viewModel: CalendarViewModel = hiltViewModel()
 ) {
-
-    val expenses = listOf(
-        DailyExpense(
-            "Ăn uống",
-            "12:30 PM",
-            "-250,000đ",
-            Icons.Default.Restaurant,
-            Color(0xFFFFE0B2)
-        ),
-        DailyExpense(
-            "Giải trí",
-            "7:00 PM",
-            "-180,000đ",
-            Icons.Default.VideogameAsset,
-            Color(0xFFE9D5FF)
-        ),
-        DailyExpense(
-            "Mua sắm",
-            "3:15 PM",
-            "-450,000đ",
-            Icons.Default.ShoppingBag,
-            Color(0xFFFBCFE8)
-        ),
-        DailyExpense(
-            "Di chuyển",
-            "8:00 AM",
-            "-50,000đ",
-            Icons.Default.DirectionsCar,
-            Color(0xFFBFDBFE)
-        ),
-        DailyExpense(
-            "Sức khỏe",
-            "10:45 AM",
-            "-120,000đ",
-            Icons.Default.Favorite,
-            Color(0xFFC7F9CC)
-        )
-    )
+    val uiState by viewModel.uiState.collectAsState()
+    val categoryMap = remember(uiState.categories) { uiState.categories.associateBy { it.documentId } }
 
     Scaffold(
         topBar = {
@@ -92,7 +55,6 @@ fun CalendarScreen(
                 }
             )
         },
-
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNavigateAddExpense,
@@ -104,9 +66,7 @@ fun CalendarScreen(
                 Icon(Icons.Default.Add, null)
             }
         },
-
         floatingActionButtonPosition = FabPosition.Center,
-
         bottomBar = {
             AppBottomNavigation(
                 currentRoute = Screen.Calendar.route,
@@ -117,11 +77,8 @@ fun CalendarScreen(
                 onProfileClick = onNavigateProfile
             )
         },
-
         containerColor = AppBackground
-
     ) { padding ->
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -129,28 +86,67 @@ fun CalendarScreen(
             contentPadding = PaddingValues(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
             item {
-                DateFilterCard()
+                DateFilterCard(
+                    initialDay = uiState.selectedDay,
+                    initialMonth = uiState.selectedMonth,
+                    initialYear = uiState.selectedYear,
+                    onShowClick = { day, month, year ->
+                        viewModel.setDateFilter(day, month, year)
+                    }
+                )
             }
 
             item {
-
                 Text(
-                    "Chi tiêu ngày 15/04/2025",
+                    "Chi tiêu ngày ${uiState.selectedDay}/${uiState.selectedMonth}/${uiState.selectedYear}",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
             }
 
-            items(expenses.size) { index ->
+            if (uiState.isLoading) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(modifier = Modifier.size(30.dp))
+                    }
+                }
+            } else if (uiState.filteredExpenses.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        Text("Không có giao dịch nào trong ngày này", color = Color.Gray)
+                    }
+                }
+            } else {
+                items(uiState.filteredExpenses) { expense ->
+                    val category = categoryMap[expense.categoryId]
+                    val icon = when (category?.icon) {
+                        "restaurant" -> Icons.Default.Restaurant
+                        "directions_car" -> Icons.Default.DirectionsCar
+                        "shopping_bag" -> Icons.Default.ShoppingBag
+                        "payments" -> Icons.Default.Payments
+                        else -> Icons.Default.Category
+                    }
+                    val iconBg = try {
+                        Color(android.graphics.Color.parseColor(category?.color ?: "#EEEEEE"))
+                    } catch (_: Exception) {
+                        Color.LightGray
+                    }
 
-                ExpenseItem(expenses[index])
-            }
+                    ExpenseItem(
+                        title = category?.name ?: "Khác",
+                        time = viewModel.formatTime(expense.date),
+                        amount = expense.amount,
+                        icon = icon,
+                        iconBg = iconBg.copy(alpha = 0.2f),
+                        iconTint = iconBg,
+                        type = category?.type ?: CategoryType.EXPENSE
+                    )
+                }
 
-            item {
-
-                TotalExpenseCard("-1,050,000đ")
+                item {
+                    TotalExpenseCard(uiState.totalDayAmount)
+                }
             }
 
             item {
@@ -161,7 +157,15 @@ fun CalendarScreen(
 }
 
 @Composable
-fun DateFilterCard() {
+fun DateFilterCard(
+    initialDay: String,
+    initialMonth: String,
+    initialYear: String,
+    onShowClick: (String, String, String) -> Unit
+) {
+    var day by remember(initialDay) { mutableStateOf(initialDay) }
+    var month by remember(initialMonth) { mutableStateOf(initialMonth) }
+    var year by remember(initialYear) { mutableStateOf(initialYear) }
 
     Card(
         shape = RoundedCornerShape(18.dp),
@@ -169,38 +173,41 @@ fun DateFilterCard() {
             containerColor = Color(0xFFFFF7E7)
         )
     ) {
-
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-
                 DateDropdown(
                     modifier = Modifier.weight(1f),
                     label = "Ngày",
-                    value = "15"
+                    value = day,
+                    options = (1..31).map { String.format(Locale.getDefault(), "%02d", it) },
+                    onSelect = { day = it }
                 )
 
                 DateDropdown(
                     modifier = Modifier.weight(1f),
                     label = "Tháng",
-                    value = "04"
+                    value = month,
+                    options = (1..12).map { String.format(Locale.getDefault(), "%02d", it) },
+                    onSelect = { month = it }
                 )
 
                 DateDropdown(
                     modifier = Modifier.weight(1f),
                     label = "Năm",
-                    value = "2025"
+                    value = year,
+                    options = (2020..2030).map { it.toString() },
+                    onSelect = { year = it }
                 )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = {},
+                onClick = { onShowClick(day, month, year) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
@@ -209,8 +216,7 @@ fun DateFilterCard() {
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
-
-                Text("Hiển thị")
+                Text("Hiển thị", color = Color.Black, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -220,11 +226,13 @@ fun DateFilterCard() {
 fun DateDropdown(
     modifier: Modifier,
     label: String,
-    value: String
+    value: String,
+    options: List<String>,
+    onSelect: (String) -> Unit
 ) {
+    var expanded by remember { mutableStateOf(false) }
 
     Column(modifier = modifier) {
-
         Text(
             label,
             fontSize = 12.sp,
@@ -233,55 +241,77 @@ fun DateDropdown(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        OutlinedCard {
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 14.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+        Box {
+            OutlinedCard(
+                modifier = Modifier.clickable { expanded = true }
             ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(value, fontSize = 14.sp)
+                    Icon(
+                        Icons.Default.ArrowDropDown,
+                        null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
 
-                Text(value)
-
-                Icon(
-                    Icons.Default.ArrowDropDown,
-                    null
-                )
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.heightIn(max = 200.dp)
+            ) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            onSelect(option)
+                            expanded = false
+                        }
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-fun ExpenseItem(expense: DailyExpense) {
-
+fun ExpenseItem(
+    title: String,
+    time: String,
+    amount: Long,
+    icon: ImageVector,
+    iconBg: Color,
+    iconTint: Color,
+    type: CategoryType
+) {
     Card(
-        shape = RoundedCornerShape(18.dp)
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             Box(
                 modifier = Modifier
                     .size(42.dp)
-                    .background(
-                        expense.iconBg,
-                        CircleShape
-                    ),
+                    .background(iconBg, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-
                 Icon(
-                    expense.icon,
+                    icon,
                     null,
-                    tint = Color.DarkGray
+                    tint = iconTint,
+                    modifier = Modifier.size(20.dp)
                 )
             }
 
@@ -290,52 +320,62 @@ fun ExpenseItem(expense: DailyExpense) {
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-
                 Text(
-                    expense.title,
-                    fontWeight = FontWeight.SemiBold
+                    title,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp
                 )
 
                 Text(
-                    expense.time,
+                    time,
                     color = Color.Gray,
                     fontSize = 12.sp
                 )
             }
 
+            val amountText = if (type == CategoryType.INCOME) "+${formatMoney(amount.toDouble())}" else "-${formatMoney(amount.toDouble())}"
+            val amountColor = if (type == CategoryType.INCOME) Color(0xFF4CAF50) else Color(0xFFE53935)
+
             Text(
-                expense.amount,
-                color = Color.Red,
-                fontWeight = FontWeight.Bold
+                amountText,
+                color = amountColor,
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp
             )
         }
     }
 }
 
 @Composable
-fun TotalExpenseCard(total: String) {
-
+fun TotalExpenseCard(total: Double) {
     Card(
-        shape = RoundedCornerShape(18.dp)
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-
             Text(
-                "Tổng chi tiêu",
-                fontWeight = FontWeight.SemiBold
+                "Tổng trong ngày",
+                fontWeight = FontWeight.Bold
             )
 
+            val totalColor = if (total >= 0) Color(0xFF1976D2) else Color(0xFFE53935)
+            val totalPrefix = if (total > 0) "+" else ""
+
             Text(
-                total,
-                color = Color.Red,
-                fontWeight = FontWeight.Bold
+                "$totalPrefix${formatMoney(total)}",
+                color = totalColor,
+                fontWeight = FontWeight.ExtraBold
             )
         }
     }
+}
+
+private fun formatMoney(amount: Double): String {
+    val formatter = java.text.NumberFormat.getCurrencyInstance(Locale.forLanguageTag("vi-VN"))
+    return formatter.format(amount).replace("₫", "đ")
 }

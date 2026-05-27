@@ -1,7 +1,5 @@
 package com.example.billbuddy.ui.screens.home
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,25 +13,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.billbuddy.data.model.CategoryType
+import com.example.billbuddy.navigation.Screen
 import com.example.billbuddy.ui.components.AppBottomNavigation
 import com.example.billbuddy.ui.viewmodel.ExpenseViewModel
 import com.google.firebase.Timestamp
 import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.ZoneId
 import java.util.Locale
 import kotlin.math.abs
-import com.example.billbuddy.navigation.Screen
-import com.example.billbuddy.ui.components.AppBottomNavigation
-import com.example.billbuddy.ui.components.StatisticsInfoBox
-import com.example.billbuddy.ui.viewmodel.AuthViewModel
 
 data class CategoryExpense(
     val name: String,
@@ -42,10 +36,10 @@ data class CategoryExpense(
     val percentage: String,
     val icon: ImageVector,
     val iconColor: Color,
-    val percentColor: Color
+    val percentColor: Color,
+    val type: CategoryType
 )
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -56,86 +50,80 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit
 ) {
     val expenseState by viewModel.expenseState.collectAsState()
+    val selectedMonth by viewModel.selectedMonth.collectAsState()
     val expenses = expenseState.expenses
-    
-    var selectedMonth by remember { mutableStateOf(YearMonth.now()) }
-    val previousMonth = remember(selectedMonth) { selectedMonth.minusMonths(1) }
-    
+    val categoriesFromDb = expenseState.categories
+
     val currentMonthExpenses = remember(expenses, selectedMonth) {
         expenses.filter { expense ->
             parseDate(expense.date)?.let { YearMonth.from(it) == selectedMonth } == true
         }
     }
-    val previousMonthExpenses = remember(expenses, selectedMonth) {
+    
+    val previousMonth = selectedMonth.minusMonths(1)
+    val previousMonthExpenses = remember(expenses, previousMonth) {
         expenses.filter { expense ->
             parseDate(expense.date)?.let { YearMonth.from(it) == previousMonth } == true
         }
     }
-
-    val totalCurrentMonthExpense = remember(currentMonthExpenses) {
-        currentMonthExpenses.filter { it.type == "EXPENSE" }.sumOf { it.amount }
-    }
-    val totalCurrentMonthIncome = remember(currentMonthExpenses) {
-        currentMonthExpenses.filter { it.type == "INCOME" }.sumOf { it.amount }
-    }
-    val balance = totalCurrentMonthIncome - totalCurrentMonthExpense
-
-    val categoryDefinitions = remember {
-        listOf(
-            CategoryUiDefinition("Ăn uống", Icons.Default.Fastfood, Color(0xFFE1BEE7)),
-            CategoryUiDefinition("Giải trí", Icons.Default.Gamepad, Color(0xFFD1C4E9)),
-            CategoryUiDefinition("Mua sắm", Icons.Default.ShoppingBag, Color(0xFFF8BBD0)),
-            CategoryUiDefinition("Di chuyển", Icons.Default.DirectionsCar, Color(0xFFBBDEFB)),
-            CategoryUiDefinition("Sức khỏe", Icons.Default.Favorite, Color(0xFFC8E6C9))
-        )
+    
+    val categoryMap = remember(categoriesFromDb) {
+        categoriesFromDb.associateBy { it.documentId }
     }
 
-    val categories = remember(currentMonthExpenses, previousMonthExpenses) {
-        categoryDefinitions.map { def ->
+    val totalCurrentMonthIncome = remember(currentMonthExpenses, categoryMap) {
+        currentMonthExpenses
+            .filter { categoryMap[it.categoryId]?.type == CategoryType.INCOME }
+            .sumOf { it.amount }
+    }
+
+    val totalCurrentMonthExpense = remember(currentMonthExpenses, categoryMap) {
+        currentMonthExpenses
+            .filter { categoryMap[it.categoryId]?.type == CategoryType.EXPENSE }
+            .sumOf { it.amount }
+    }
+
+    val mappedCategories = remember(currentMonthExpenses, previousMonthExpenses, categoriesFromDb) {
+        categoriesFromDb.map { category ->
             val currentTotal = currentMonthExpenses
-                .filter { it.categoryId == def.name && it.type == "EXPENSE" }
+                .filter { it.categoryId == category.documentId }
                 .sumOf { it.amount }
             val previousTotal = previousMonthExpenses
-                .filter { it.categoryId == def.name && it.type == "EXPENSE" }
+                .filter { it.categoryId == category.documentId }
                 .sumOf { it.amount }
-            val transactionCount = currentMonthExpenses.count { it.categoryId == def.name && it.type == "EXPENSE" }
+            val transactionCount = currentMonthExpenses.count { it.categoryId == category.documentId }
 
             CategoryExpense(
-                name = def.name,
+                name = category.name,
                 transactionCount = transactionCount,
-                amount = formatExpenseAmount(currentTotal.toDouble()),
+                amount = formatAmountByType(currentTotal.toDouble(), category.type),
                 percentage = buildPercentText(currentTotal.toDouble(), previousTotal.toDouble()),
-                icon = def.icon,
-                iconColor = def.iconColor,
-                percentColor = percentColor(currentTotal.toDouble(), previousTotal.toDouble())
+                icon = when(category.icon) {
+                    "restaurant" -> Icons.Default.Restaurant
+                    "directions_car" -> Icons.Default.DirectionsCar
+                    "shopping_bag" -> Icons.Default.ShoppingBag
+                    "payments" -> Icons.Default.Payments
+                    else -> Icons.Default.Category
+                },
+                iconColor = try { Color(android.graphics.Color.parseColor(category.color)) } catch(_: Exception) { Color.Gray },
+                percentColor = percentColor(currentTotal.toDouble(), previousTotal.toDouble()),
+                type = category.type
             )
         }
     }
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        "Tổng Quan Thu Chi",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More")
-                    }
-                }
-            )
+            HomeTopBar()
         },
         bottomBar = {
             AppBottomNavigation(
                 currentRoute = Screen.Home.route,
                 onHomeClick = {},
                 onCalendarClick = onNavigateToCalendar,
+                onAddClick = onNavigateToAddExpense,
                 onStatsClick = onNavigateToStatistics,
-                onProfileClick = onNavigateToProfile,
-                onAddClick = onNavigateToAddExpense
+                onProfileClick = onNavigateToProfile
             )
         },
         floatingActionButton = {
@@ -178,33 +166,20 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     TabButton(
-                        text = "Tháng ${previousMonth.monthValue}",
-                        isSelected = false,
+                        text = "Tháng trước", 
+                        isSelected = false, 
                         modifier = Modifier.weight(1f),
-                        onClick = { selectedMonth = previousMonth }
+                        onClick = { viewModel.selectMonth(selectedMonth.minusMonths(1)) }
                     )
                     TabButton(
-                        text = "Tháng ${selectedMonth.monthValue}",
-                        isSelected = true,
+                        text = "Tháng này", 
+                        isSelected = true, 
                         modifier = Modifier.weight(1f),
-                        onClick = { }
-                    )
-                    TabButton(
-                        text = "Tháng ${(selectedMonth.plusMonths(1)).monthValue}",
-                        isSelected = false,
-                        modifier = Modifier.weight(1f),
-                        onClick = { selectedMonth = selectedMonth.plusMonths(1) }
+                        onClick = { viewModel.selectMonth(YearMonth.now()) }
                     )
                 }
             }
 
-            item {
-                HomeSummaryHeader(
-                    totalExpense = totalCurrentMonthExpense.toDouble(),
-                    totalIncome = totalCurrentMonthIncome.toDouble(),
-                    balance = balance.toDouble()
-                )
-            }
 
             item {
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
@@ -221,7 +196,7 @@ fun HomeScreen(
             }
 
 
-            items(categories) { category ->
+            items(mappedCategories) { category ->
                 ExpenseCategoryCard(category)
             }
 
@@ -232,64 +207,37 @@ fun HomeScreen(
                 )
             }
 
-//            item {
-//                StatisticsInfoBox()
-//            }
-            
+            item {
+                StatisticsInfoBox()
+            }
+
             item { Spacer(modifier = Modifier.height(40.dp)) }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeSummaryHeader(
-    totalExpense: Double,
-    totalIncome: Double,
-    balance: Double
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF212121))
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("Số dư hiện tại", color = Color.Gray, fontSize = 14.sp)
+fun HomeTopBar() {
+    CenterAlignedTopAppBar(
+        title = {
             Text(
-                formatCurrency(balance),
-                color = Color.White,
-                fontSize = 28.sp,
+                text = "Trang chủ",
                 fontWeight = FontWeight.Bold
             )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Thu nhập", color = Color.Gray, fontSize = 12.sp)
-                    Text(formatNumber(totalIncome), color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
-                }
-                VerticalDivider(modifier = Modifier.height(30.dp), color = Color.Gray)
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Chi tiêu", color = Color.Gray, fontSize = 12.sp)
-                    Text(formatNumber(totalExpense), color = Color(0xFFF44336), fontWeight = FontWeight.Bold)
-                }
+        },
+        actions = {
+            IconButton(onClick = { }) {
+                Icon(Icons.Default.MoreVert, contentDescription = "More")
             }
         }
-    }
+    )
 }
 
 @Composable
-fun TabButton(text: String, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun TabButton(text: String, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
     Surface(
-        modifier = modifier
-            .height(40.dp)
-            .clickable { onClick() },
+        modifier = modifier.height(40.dp).clickable { onClick() },
         shape = RoundedCornerShape(8.dp),
         color = if (isSelected) Color(0xFFE8B931) else Color(0xFFF5F5F5)
     ) {
@@ -319,7 +267,7 @@ fun ExpenseCategoryCard(category: CategoryExpense) {
             Surface(
                 modifier = Modifier.size(40.dp),
                 shape = RoundedCornerShape(8.dp),
-                color = category.iconColor.copy(alpha = 0.5f)
+                color = category.iconColor.copy(alpha = 0.2f)
             ) {
                 Icon(
                     imageVector = category.icon,
@@ -337,7 +285,12 @@ fun ExpenseCategoryCard(category: CategoryExpense) {
             }
 
             Column(horizontalAlignment = Alignment.End) {
-                Text(text = category.amount, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold))
+                val amountColor = if (category.type == CategoryType.INCOME) Color(0xFF4CAF50) else Color.Black
+                Text(
+                    text = category.amount, 
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                    color = amountColor
+                )
                 Text(text = category.percentage, style = MaterialTheme.typography.labelSmall, color = category.percentColor)
             }
         }
@@ -345,8 +298,8 @@ fun ExpenseCategoryCard(category: CategoryExpense) {
 }
 
 @Composable
-fun FinancialOverviewCard(totalExpense: Double, totalIncome: Double) {
-    val endBalance = totalIncome - totalExpense
+fun FinancialOverviewCard(totalExpense: Double, totalIncome: Double, startBalance: Double = 0.0) {
+    val endBalance = startBalance + totalIncome - totalExpense
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -361,7 +314,7 @@ fun FinancialOverviewCard(totalExpense: Double, totalIncome: Double) {
 
             OverviewRow(
                 Icons.Default.ArrowUpward,
-                "Tổng thu nhập",
+                "Thu nhập",
                 "+${formatCurrency(totalIncome)}",
                 Color(0xFF4CAF50)
             )
@@ -374,7 +327,7 @@ fun FinancialOverviewCard(totalExpense: Double, totalIncome: Double) {
             )
 
             Spacer(modifier = Modifier.height(12.dp))
-            
+
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
@@ -442,18 +395,16 @@ fun StatisticsInfoBox() {
     }
 }
 
-private data class CategoryUiDefinition(
-    val name: String,
-    val icon: ImageVector,
-    val iconColor: Color
-)
-
 private fun parseDate(timestamp: Timestamp?): LocalDate? {
-    return timestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDate()
+    return timestamp?.let {
+        java.time.Instant.ofEpochMilli(it.toDate().time)
+            .atZone(java.time.ZoneId.systemDefault())
+            .toLocalDate()
+    }
 }
 
 private fun formatNumber(value: Double): String {
-    val formatter = NumberFormat.getNumberInstance(Locale.forLanguageTag("vi-VN"))
+    val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
     formatter.maximumFractionDigits = 0
     formatter.minimumFractionDigits = 0
     return formatter.format(value)
@@ -463,8 +414,12 @@ private fun formatCurrency(value: Double): String {
     return "${formatNumber(abs(value))}đ"
 }
 
-private fun formatExpenseAmount(value: Double): String {
-    return if (value <= 0.0) "0đ" else "-${formatCurrency(value)}"
+private fun formatAmountByType(value: Double, type: CategoryType): String {
+    return if (type == CategoryType.INCOME) {
+        if (value <= 0.0) "0đ" else "+${formatCurrency(value)}"
+    } else {
+        if (value <= 0.0) "0đ" else "-${formatCurrency(value)}"
+    }
 }
 
 private fun buildPercentText(current: Double, previous: Double): String {

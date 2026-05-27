@@ -54,7 +54,7 @@ fun getCategoryColor(categoryId: String): Color {
 fun getCategoryName(categoryId: String): String {
     // If categoryId is already a friendly name from our list, return it.
     // Otherwise, we might need a mapping if they were actual IDs.
-    // Based on AddExpenseScreen.kt, these are the strings used:
+
     // "Ăn uống", "Giải trí", "Mua sắm", "Di chuyển", "Sức khỏe"
     return categoryId
 }

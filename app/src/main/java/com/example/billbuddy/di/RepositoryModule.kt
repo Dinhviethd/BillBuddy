@@ -2,10 +2,12 @@ package com.example.billbuddy.di
 
 import com.example.billbuddy.data.repo.AuthRepository
 import com.example.billbuddy.data.repo.AuthRepositoryImpl
-import com.example.billbuddy.data.repo.ExpenseRepository
-import com.example.billbuddy.data.repo.ExpenseRepositoryImpl
+import com.example.billbuddy.data.repo.CategoryRepository
+import com.example.billbuddy.data.repo.CategoryRepositoryImpl
 import com.example.billbuddy.data.repo.DebtRepository
 import com.example.billbuddy.data.repo.DebtRepositoryImpl
+import com.example.billbuddy.data.repo.ExpenseRepository
+import com.example.billbuddy.data.repo.ExpenseRepositoryImpl
 import com.example.billbuddy.data.repo.UserRepository
 import com.example.billbuddy.data.repo.UserRepositoryImpl
 import dagger.Binds
@@ -26,10 +28,6 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindExpenseRepository(
-        expenseRepositoryImpl: ExpenseRepositoryImpl
-    ): ExpenseRepository
-}
     abstract fun bindDebtRepository(
         debtRepositoryImpl: DebtRepositoryImpl
     ): DebtRepository
@@ -39,4 +37,16 @@ abstract class RepositoryModule {
     abstract fun bindUserRepository(
         userRepositoryImpl: UserRepositoryImpl
     ): UserRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindExpenseRepository(
+        expenseRepositoryImpl: ExpenseRepositoryImpl
+    ): ExpenseRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCategoryRepository(
+        categoryRepositoryImpl: CategoryRepositoryImpl
+    ): CategoryRepository
 }

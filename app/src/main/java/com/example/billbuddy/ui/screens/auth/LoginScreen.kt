@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import android.util.Patterns
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -19,6 +20,7 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var errorText by remember { mutableStateOf<String?>(null) }
     val authState by viewModel.authState
 
     LaunchedEffect(authState) {
@@ -54,12 +56,12 @@ fun LoginScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.surface,
+                color = MaterialTheme.colorScheme.background,
                 tonalElevation = 2.dp
             ) {
                 Column(
                     modifier = Modifier.padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     OutlinedTextField(
                         value = email,
@@ -100,7 +102,18 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
             Button(
-                onClick = { viewModel.login(email, password) },
+                onClick = {
+                    when {
+                        email.isBlank() -> errorText = "Email không được để trống"
+                        !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> errorText = "Email không hợp lệ"
+                        password.isBlank() -> errorText = "Mật khẩu không được để trống"
+                        password.length < 6 -> errorText = "Mật khẩu phải có ít nhất 6 ký tự"
+                        else -> {
+                            errorText = null
+                            viewModel.login(email, password)
+                        }
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -133,8 +146,8 @@ fun LoginScreen(
                     color = MaterialTheme.colorScheme.primary
                 )
             }
-
-            if (authState is Resource.Error) {
+            val finalError = errorText ?: if (authState is Resource.Error) (authState as Resource.Error).message else null
+            if (finalError != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
@@ -142,7 +155,7 @@ fun LoginScreen(
                     color = MaterialTheme.colorScheme.error.copy(alpha = 0.1f)
                 ) {
                     Text(
-                        text = (authState as Resource.Error).message ?: "Unknown error",
+                        text = finalError,
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)

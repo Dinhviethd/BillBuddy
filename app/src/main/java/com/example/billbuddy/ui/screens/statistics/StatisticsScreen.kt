@@ -32,6 +32,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,64 +43,99 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.runtime.collectAsState
+import com.example.billbuddy.ui.components.AppBottomNavigation
+import com.example.billbuddy.ui.theme.LightAmber
+import com.example.billbuddy.navigation.Screen
 import com.example.billbuddy.ui.theme.AmberDark
 import com.example.billbuddy.ui.theme.Beige
 import com.example.billbuddy.ui.theme.LightAmber
-import com.example.billbuddy.ui.viewmodel.StatisticsViewModel
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Locale
-@RequiresApi(Build.VERSION_CODES.O)
-private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-private val pieChartColors = listOf(
-    Color(0xFFED1E24),
-    Color(0xFF0052CC),
-    Color(0xFF00B050),
-    Color(0xFFFFD966),
-    Color(0xFF7030A0),
-    Color(0xFFFFA500)
-)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel()) {
-    val state by viewModel.uiState.collectAsState()
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFFFF9EB))
-            .verticalScroll(rememberScrollState())
-    ) {
-        Header()
-        Spacer(modifier = Modifier.height(16.dp))
-        DateRangeSection(
-            fromDate = state.fromDate,
-            toDate = state.toDate,
-            onTodayClick = viewModel::setTodayRange,
-            onRefreshClick = viewModel::refresh
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        if (state.isLoading) {
-            LoadingCard()
-        } else if (state.errorMessage != null) {
-            EmptyStateCard(text = state.errorMessage ?: "")
-        } else {
-            SummarySection(
-                totalAmount = state.totalAmount,
-                categoryCount = state.categorySummaries.size,
-                expenseCount = state.expenseCount
+fun StatisticsScreen(
+    onNavigateToHome: () -> Unit,
+    onNavigateToCalendar: () -> Unit,
+    onNavigateToAddExpense: () -> Unit,
+    onNavigateToProfile: () -> Unit
+) {
+    var fromDate by remember { mutableStateOf(LocalDate.now()) }
+    var toDate by remember { mutableStateOf(LocalDate.now()) }
+    
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "Thống kê",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                actions = {
+                    IconButton(onClick = { }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "More")
+                    }
+                }
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            if (state.hasData) {
-                PieChartSection(state.categorySummaries)
-                Spacer(modifier = Modifier.height(16.dp))
-                CategoryDetailsSection(state.categorySummaries)
-            } else {
-                EmptyStateCard(text = "Không có dữ liệu")
+        },
+        bottomBar = {
+            AppBottomNavigation(
+                currentRoute = Screen.Statistics.route,
+                onHomeClick = onNavigateToHome,
+                onCalendarClick = onNavigateToCalendar,
+                onAddClick = onNavigateToAddExpense,
+                onStatsClick = {},
+                onProfileClick = onNavigateToProfile
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onNavigateToAddExpense,
+                shape = CircleShape,
+                containerColor = Color(0xFFD47500),
+                contentColor = Color.White,
+                modifier = Modifier.offset(y = 50.dp)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add", modifier = Modifier.size(32.dp))
             }
+        },
+        floatingActionButtonPosition = FabPosition.Center
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .background(Color(0xFFFFF9EB))
+                .verticalScroll(rememberScrollState())
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Date Range Selection
+            DateRangeSection(
+                fromDate = fromDate,
+                toDate = toDate,
+                onFromDateChange = { fromDate = it },
+                onToDateChange = { toDate = it }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Summary Section
+            SummarySection()
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Pie Chart Section
+            PieChartSection()
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Category Details Section
+            CategoryDetailsSection()
+
+            Spacer(modifier = Modifier.height(80.dp))
         }
-        Spacer(modifier = Modifier.height(80.dp))
     }
 }
 @Composable
@@ -380,8 +418,8 @@ private fun CategoryDetailItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

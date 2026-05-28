@@ -1,0 +1,673 @@
+# proto-message: google.testing.platform.proto.api.core.TestSuiteResult
+# 2026-05-28T15:41:51.635053500Z:
+test_suite_meta_data {
+  scheduled_test_case_count: 2
+  device {
+    id: "emulator-5554"
+    friendly_name: "primary"
+  }
+}
+test_status: PASSED
+test_result {
+  test_case {
+    test_class: "ExampleStartupBenchmark"
+    test_package: "com.example.benchmark"
+    test_method: "startup"
+    start_time {
+      seconds: 1779982795
+      nanos: 112000000
+    }
+    end_time {
+      seconds: 1779982864
+      nanos: 82000000
+    }
+    device {
+      id: "emulator-5554"
+      friendly_name: "primary"
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "additionaltestoutput.benchmark.message"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\connected_android_test_additional_output\\benchmark\\connected\\Pixel_8(AVD) - 14\\additionaltestoutput.benchmark.message_com.example.benchmark.ExampleStartupBenchmark.startup.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "additionaltestoutput.benchmark.trace"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\connected_android_test_additional_output\\benchmark\\connected\\Pixel_8(AVD) - 14\\ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace"
+    }
+  }
+  output_artifact {
+    label {
+      label: "additionaltestoutput.benchmark.trace"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\connected_android_test_additional_output\\benchmark\\connected\\Pixel_8(AVD) - 14\\ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace"
+    }
+  }
+  output_artifact {
+    label {
+      label: "additionaltestoutput.benchmark.trace"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\connected_android_test_additional_output\\benchmark\\connected\\Pixel_8(AVD) - 14\\ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace"
+    }
+  }
+  output_artifact {
+    label {
+      label: "additionaltestoutput.benchmark.trace"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\connected_android_test_additional_output\\benchmark\\connected\\Pixel_8(AVD) - 14\\ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace"
+    }
+  }
+  output_artifact {
+    label {
+      label: "additionaltestoutput.benchmark.trace"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\connected_android_test_additional_output\\benchmark\\connected\\Pixel_8(AVD) - 14\\ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace"
+    }
+  }
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\androidTest-results\\connected\\benchmark\\Pixel_8(AVD) - 14\\logcat-com.example.benchmark.ExampleStartupBenchmark-startup.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\androidTest-results\\connected\\benchmark\\Pixel_8(AVD) - 14\\device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\androidTest-results\\connected\\benchmark\\Pixel_8(AVD) - 14\\meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\androidTest-results\\connected\\benchmark\\Pixel_8(AVD) - 14\\cpuinfo"
+    }
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace"
+  }
+  details {
+    key: "EMULATOR_time_to_initial_display_millis_median"
+    value: "2503.2803"
+  }
+  details {
+    key: "EMULATOR_time_to_initial_display_millis_min"
+    value: "2294.4324"
+  }
+  details {
+    key: "EMULATOR_time_to_initial_display_millis_stddev"
+    value: "182.47643069211162"
+  }
+  details {
+    key: "android.studio.display.benchmark"
+    value: "WARNING: Running on Emulator\nBenchmark is running on an emulator, which is not representative of\nreal user devices. Use a physical device to benchmark. Emulator\nbenchmark improvements might not carry over to a real user\'s\nexperience (or even regress real device performance).\n\nExampleStartupBenchmark_startup\ntimeToInitialDisplayMs   min 2,294.4,   median 2,503.3,   max 2,713.5\n"
+  }
+  details {
+    key: "android.studio.v2display.benchmark"
+    value: "WARNING: Running on Emulator\nBenchmark is running on an emulator, which is not representative of\nreal user devices. Use a physical device to benchmark. Emulator\nbenchmark improvements might not carry over to a real user\'s\nexperience (or even regress real device performance).\n\nExampleStartupBenchmark_startup\ntimeToInitialDisplayMs   [min 2,294.4](file://ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace),   [median 2,503.3](file://ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace),   [max 2,713.5](file://ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace)\nTraces: Iteration [0](file://ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace) [1](file://ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace) [2](file://ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace) [3](file://ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace) [4](file://ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace)\n"
+  }
+  details {
+    key: "android.studio.v2display.benchmark.outputDirPath"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace"
+  }
+  details {
+    key: "EMULATOR_time_to_initial_display_millis_median"
+    value: "2503.2803"
+  }
+  details {
+    key: "EMULATOR_time_to_initial_display_millis_min"
+    value: "2294.4324"
+  }
+  details {
+    key: "EMULATOR_time_to_initial_display_millis_stddev"
+    value: "182.47643069211162"
+  }
+  details {
+    key: "android.studio.display.benchmark"
+    value: "WARNING: Running on Emulator\nBenchmark is running on an emulator, which is not representative of\nreal user devices. Use a physical device to benchmark. Emulator\nbenchmark improvements might not carry over to a real user\'s\nexperience (or even regress real device performance).\n\nExampleStartupBenchmark_startup\ntimeToInitialDisplayMs   min 2,294.4,   median 2,503.3,   max 2,713.5\n"
+  }
+  details {
+    key: "android.studio.v2display.benchmark"
+    value: "WARNING: Running on Emulator\nBenchmark is running on an emulator, which is not representative of\nreal user devices. Use a physical device to benchmark. Emulator\nbenchmark improvements might not carry over to a real user\'s\nexperience (or even regress real device performance).\n\nExampleStartupBenchmark_startup\ntimeToInitialDisplayMs   [min 2,294.4](file://ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace),   [median 2,503.3](file://ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace),   [max 2,713.5](file://ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace)\nTraces: Iteration [0](file://ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace) [1](file://ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace) [2](file://ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace) [3](file://ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace) [4](file://ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace)\n"
+  }
+  details {
+    key: "android.studio.v2display.benchmark.outputDirPath"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace"
+  }
+  details {
+    key: "EMULATOR_time_to_initial_display_millis_median"
+    value: "2503.2803"
+  }
+  details {
+    key: "EMULATOR_time_to_initial_display_millis_min"
+    value: "2294.4324"
+  }
+  details {
+    key: "EMULATOR_time_to_initial_display_millis_stddev"
+    value: "182.47643069211162"
+  }
+  details {
+    key: "android.studio.display.benchmark"
+    value: "WARNING: Running on Emulator\nBenchmark is running on an emulator, which is not representative of\nreal user devices. Use a physical device to benchmark. Emulator\nbenchmark improvements might not carry over to a real user\'s\nexperience (or even regress real device performance).\n\nExampleStartupBenchmark_startup\ntimeToInitialDisplayMs   min 2,294.4,   median 2,503.3,   max 2,713.5\n"
+  }
+  details {
+    key: "android.studio.v2display.benchmark"
+    value: "WARNING: Running on Emulator\nBenchmark is running on an emulator, which is not representative of\nreal user devices. Use a physical device to benchmark. Emulator\nbenchmark improvements might not carry over to a real user\'s\nexperience (or even regress real device performance).\n\nExampleStartupBenchmark_startup\ntimeToInitialDisplayMs   [min 2,294.4](file://ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace),   [median 2,503.3](file://ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace),   [max 2,713.5](file://ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace)\nTraces: Iteration [0](file://ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace) [1](file://ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace) [2](file://ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace) [3](file://ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace) [4](file://ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace)\n"
+  }
+  details {
+    key: "android.studio.v2display.benchmark.outputDirPath"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace"
+  }
+  details {
+    key: "EMULATOR_time_to_initial_display_millis_median"
+    value: "2503.2803"
+  }
+  details {
+    key: "EMULATOR_time_to_initial_display_millis_min"
+    value: "2294.4324"
+  }
+  details {
+    key: "EMULATOR_time_to_initial_display_millis_stddev"
+    value: "182.47643069211162"
+  }
+  details {
+    key: "android.studio.display.benchmark"
+    value: "WARNING: Running on Emulator\nBenchmark is running on an emulator, which is not representative of\nreal user devices. Use a physical device to benchmark. Emulator\nbenchmark improvements might not carry over to a real user\'s\nexperience (or even regress real device performance).\n\nExampleStartupBenchmark_startup\ntimeToInitialDisplayMs   min 2,294.4,   median 2,503.3,   max 2,713.5\n"
+  }
+  details {
+    key: "android.studio.v2display.benchmark"
+    value: "WARNING: Running on Emulator\nBenchmark is running on an emulator, which is not representative of\nreal user devices. Use a physical device to benchmark. Emulator\nbenchmark improvements might not carry over to a real user\'s\nexperience (or even regress real device performance).\n\nExampleStartupBenchmark_startup\ntimeToInitialDisplayMs   [min 2,294.4](file://ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace),   [median 2,503.3](file://ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace),   [max 2,713.5](file://ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace)\nTraces: Iteration [0](file://ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace) [1](file://ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace) [2](file://ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace) [3](file://ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace) [4](file://ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace)\n"
+  }
+  details {
+    key: "android.studio.v2display.benchmark.outputDirPath"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output"
+  }
+}
+test_result {
+  test_case {
+    test_class: "ExampleStartupBenchmark"
+    test_package: "com.example.benchmark"
+    test_method: "frameTiming"
+    start_time {
+      seconds: 1779982865
+      nanos: 887000000
+    }
+    end_time {
+      seconds: 1779982905
+      nanos: 882000000
+    }
+    device {
+      id: "emulator-5554"
+      friendly_name: "primary"
+    }
+  }
+  test_status: PASSED
+  output_artifact {
+    label {
+      label: "additionaltestoutput.benchmark.message"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\connected_android_test_additional_output\\benchmark\\connected\\Pixel_8(AVD) - 14\\additionaltestoutput.benchmark.message_com.example.benchmark.ExampleStartupBenchmark.frameTiming.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "additionaltestoutput.benchmark.trace"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\connected_android_test_additional_output\\benchmark\\connected\\Pixel_8(AVD) - 14\\ExampleStartupBenchmark_frameTiming_iter000_2026-05-28-15-41-24.perfetto-trace"
+    }
+  }
+  output_artifact {
+    label {
+      label: "additionaltestoutput.benchmark.trace"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\connected_android_test_additional_output\\benchmark\\connected\\Pixel_8(AVD) - 14\\ExampleStartupBenchmark_frameTiming_iter001_2026-05-28-15-41-29.perfetto-trace"
+    }
+  }
+  output_artifact {
+    label {
+      label: "additionaltestoutput.benchmark.trace"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\connected_android_test_additional_output\\benchmark\\connected\\Pixel_8(AVD) - 14\\ExampleStartupBenchmark_frameTiming_iter002_2026-05-28-15-41-33.perfetto-trace"
+    }
+  }
+  output_artifact {
+    label {
+      label: "additionaltestoutput.benchmark.trace"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\connected_android_test_additional_output\\benchmark\\connected\\Pixel_8(AVD) - 14\\ExampleStartupBenchmark_frameTiming_iter003_2026-05-28-15-41-37.perfetto-trace"
+    }
+  }
+  output_artifact {
+    label {
+      label: "additionaltestoutput.benchmark.trace"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\connected_android_test_additional_output\\benchmark\\connected\\Pixel_8(AVD) - 14\\ExampleStartupBenchmark_frameTiming_iter004_2026-05-28-15-41-42.perfetto-trace"
+    }
+  }
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\androidTest-results\\connected\\benchmark\\Pixel_8(AVD) - 14\\logcat-com.example.benchmark.ExampleStartupBenchmark-frameTiming.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\androidTest-results\\connected\\benchmark\\Pixel_8(AVD) - 14\\device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\androidTest-results\\connected\\benchmark\\Pixel_8(AVD) - 14\\meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\androidTest-results\\connected\\benchmark\\Pixel_8(AVD) - 14\\cpuinfo"
+    }
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter000_2026-05-28-15-41-24.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter000_2026-05-28-15-41-24.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter001_2026-05-28-15-41-29.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter001_2026-05-28-15-41-29.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter002_2026-05-28-15-41-33.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter002_2026-05-28-15-41-33.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter003_2026-05-28-15-41-37.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter003_2026-05-28-15-41-37.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter004_2026-05-28-15-41-42.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter004_2026-05-28-15-41-42.perfetto-trace"
+  }
+  details {
+    key: "EMULATOR_frame_duration_cpu_millis_p50"
+    value: "29.9352"
+  }
+  details {
+    key: "EMULATOR_frame_duration_cpu_millis_p90"
+    value: "52.5235"
+  }
+  details {
+    key: "EMULATOR_frame_duration_cpu_millis_p95"
+    value: "67.6644"
+  }
+  details {
+    key: "EMULATOR_frame_duration_cpu_millis_p99"
+    value: "313.4425"
+  }
+  details {
+    key: "EMULATOR_frame_overrun_millis_p50"
+    value: "26.308758"
+  }
+  details {
+    key: "EMULATOR_frame_overrun_millis_p90"
+    value: "68.795596"
+  }
+  details {
+    key: "EMULATOR_frame_overrun_millis_p95"
+    value: "260.188624"
+  }
+  details {
+    key: "EMULATOR_frame_overrun_millis_p99"
+    value: "2625.917886"
+  }
+  details {
+    key: "android.studio.display.benchmark"
+    value: "WARNING: Running on Emulator\nBenchmark is running on an emulator, which is not representative of\nreal user devices. Use a physical device to benchmark. Emulator\nbenchmark improvements might not carry over to a real user\'s\nexperience (or even regress real device performance).\n\nExampleStartupBenchmark_frameTiming\nframeDurationCpuMs   P50     29.9,   P90     52.5,   P95     67.7,   P99    313.4\nframeOverrunMs       P50     26.3,   P90     68.8,   P95    260.2,   P99  2,625.9\n"
+  }
+  details {
+    key: "android.studio.v2display.benchmark"
+    value: "WARNING: Running on Emulator\nBenchmark is running on an emulator, which is not representative of\nreal user devices. Use a physical device to benchmark. Emulator\nbenchmark improvements might not carry over to a real user\'s\nexperience (or even regress real device performance).\n\nExampleStartupBenchmark_frameTiming\nframeDurationCpuMs   P50     29.9,   P90     52.5,   P95     67.7,   P99    313.4\nframeOverrunMs       P50     26.3,   P90     68.8,   P95    260.2,   P99  2,625.9\nTraces: Iteration [0](file://ExampleStartupBenchmark_frameTiming_iter000_2026-05-28-15-41-24.perfetto-trace) [1](file://ExampleStartupBenchmark_frameTiming_iter001_2026-05-28-15-41-29.perfetto-trace) [2](file://ExampleStartupBenchmark_frameTiming_iter002_2026-05-28-15-41-33.perfetto-trace) [3](file://ExampleStartupBenchmark_frameTiming_iter003_2026-05-28-15-41-37.perfetto-trace) [4](file://ExampleStartupBenchmark_frameTiming_iter004_2026-05-28-15-41-42.perfetto-trace)\n"
+  }
+  details {
+    key: "android.studio.v2display.benchmark.outputDirPath"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter000_2026-05-28-15-41-24.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter000_2026-05-28-15-41-24.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter001_2026-05-28-15-41-29.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter001_2026-05-28-15-41-29.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter002_2026-05-28-15-41-33.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter002_2026-05-28-15-41-33.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter003_2026-05-28-15-41-37.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter003_2026-05-28-15-41-37.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter004_2026-05-28-15-41-42.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter004_2026-05-28-15-41-42.perfetto-trace"
+  }
+  details {
+    key: "EMULATOR_frame_duration_cpu_millis_p50"
+    value: "29.9352"
+  }
+  details {
+    key: "EMULATOR_frame_duration_cpu_millis_p90"
+    value: "52.5235"
+  }
+  details {
+    key: "EMULATOR_frame_duration_cpu_millis_p95"
+    value: "67.6644"
+  }
+  details {
+    key: "EMULATOR_frame_duration_cpu_millis_p99"
+    value: "313.4425"
+  }
+  details {
+    key: "EMULATOR_frame_overrun_millis_p50"
+    value: "26.308758"
+  }
+  details {
+    key: "EMULATOR_frame_overrun_millis_p90"
+    value: "68.795596"
+  }
+  details {
+    key: "EMULATOR_frame_overrun_millis_p95"
+    value: "260.188624"
+  }
+  details {
+    key: "EMULATOR_frame_overrun_millis_p99"
+    value: "2625.917886"
+  }
+  details {
+    key: "android.studio.display.benchmark"
+    value: "WARNING: Running on Emulator\nBenchmark is running on an emulator, which is not representative of\nreal user devices. Use a physical device to benchmark. Emulator\nbenchmark improvements might not carry over to a real user\'s\nexperience (or even regress real device performance).\n\nExampleStartupBenchmark_frameTiming\nframeDurationCpuMs   P50     29.9,   P90     52.5,   P95     67.7,   P99    313.4\nframeOverrunMs       P50     26.3,   P90     68.8,   P95    260.2,   P99  2,625.9\n"
+  }
+  details {
+    key: "android.studio.v2display.benchmark"
+    value: "WARNING: Running on Emulator\nBenchmark is running on an emulator, which is not representative of\nreal user devices. Use a physical device to benchmark. Emulator\nbenchmark improvements might not carry over to a real user\'s\nexperience (or even regress real device performance).\n\nExampleStartupBenchmark_frameTiming\nframeDurationCpuMs   P50     29.9,   P90     52.5,   P95     67.7,   P99    313.4\nframeOverrunMs       P50     26.3,   P90     68.8,   P95    260.2,   P99  2,625.9\nTraces: Iteration [0](file://ExampleStartupBenchmark_frameTiming_iter000_2026-05-28-15-41-24.perfetto-trace) [1](file://ExampleStartupBenchmark_frameTiming_iter001_2026-05-28-15-41-29.perfetto-trace) [2](file://ExampleStartupBenchmark_frameTiming_iter002_2026-05-28-15-41-33.perfetto-trace) [3](file://ExampleStartupBenchmark_frameTiming_iter003_2026-05-28-15-41-37.perfetto-trace) [4](file://ExampleStartupBenchmark_frameTiming_iter004_2026-05-28-15-41-42.perfetto-trace)\n"
+  }
+  details {
+    key: "android.studio.v2display.benchmark.outputDirPath"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter000_2026-05-28-15-41-24.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter000_2026-05-28-15-41-24.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter001_2026-05-28-15-41-29.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter001_2026-05-28-15-41-29.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter002_2026-05-28-15-41-33.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter002_2026-05-28-15-41-33.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter003_2026-05-28-15-41-37.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter003_2026-05-28-15-41-37.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter004_2026-05-28-15-41-42.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter004_2026-05-28-15-41-42.perfetto-trace"
+  }
+  details {
+    key: "EMULATOR_frame_duration_cpu_millis_p50"
+    value: "29.9352"
+  }
+  details {
+    key: "EMULATOR_frame_duration_cpu_millis_p90"
+    value: "52.5235"
+  }
+  details {
+    key: "EMULATOR_frame_duration_cpu_millis_p95"
+    value: "67.6644"
+  }
+  details {
+    key: "EMULATOR_frame_duration_cpu_millis_p99"
+    value: "313.4425"
+  }
+  details {
+    key: "EMULATOR_frame_overrun_millis_p50"
+    value: "26.308758"
+  }
+  details {
+    key: "EMULATOR_frame_overrun_millis_p90"
+    value: "68.795596"
+  }
+  details {
+    key: "EMULATOR_frame_overrun_millis_p95"
+    value: "260.188624"
+  }
+  details {
+    key: "EMULATOR_frame_overrun_millis_p99"
+    value: "2625.917886"
+  }
+  details {
+    key: "android.studio.display.benchmark"
+    value: "WARNING: Running on Emulator\nBenchmark is running on an emulator, which is not representative of\nreal user devices. Use a physical device to benchmark. Emulator\nbenchmark improvements might not carry over to a real user\'s\nexperience (or even regress real device performance).\n\nExampleStartupBenchmark_frameTiming\nframeDurationCpuMs   P50     29.9,   P90     52.5,   P95     67.7,   P99    313.4\nframeOverrunMs       P50     26.3,   P90     68.8,   P95    260.2,   P99  2,625.9\n"
+  }
+  details {
+    key: "android.studio.v2display.benchmark"
+    value: "WARNING: Running on Emulator\nBenchmark is running on an emulator, which is not representative of\nreal user devices. Use a physical device to benchmark. Emulator\nbenchmark improvements might not carry over to a real user\'s\nexperience (or even regress real device performance).\n\nExampleStartupBenchmark_frameTiming\nframeDurationCpuMs   P50     29.9,   P90     52.5,   P95     67.7,   P99    313.4\nframeOverrunMs       P50     26.3,   P90     68.8,   P95    260.2,   P99  2,625.9\nTraces: Iteration [0](file://ExampleStartupBenchmark_frameTiming_iter000_2026-05-28-15-41-24.perfetto-trace) [1](file://ExampleStartupBenchmark_frameTiming_iter001_2026-05-28-15-41-29.perfetto-trace) [2](file://ExampleStartupBenchmark_frameTiming_iter002_2026-05-28-15-41-33.perfetto-trace) [3](file://ExampleStartupBenchmark_frameTiming_iter003_2026-05-28-15-41-37.perfetto-trace) [4](file://ExampleStartupBenchmark_frameTiming_iter004_2026-05-28-15-41-42.perfetto-trace)\n"
+  }
+  details {
+    key: "android.studio.v2display.benchmark.outputDirPath"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter000_2026-05-28-15-41-24.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter000_2026-05-28-15-41-24.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter001_2026-05-28-15-41-29.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter001_2026-05-28-15-41-29.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter002_2026-05-28-15-41-33.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter002_2026-05-28-15-41-33.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter003_2026-05-28-15-41-37.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter003_2026-05-28-15-41-37.perfetto-trace"
+  }
+  details {
+    key: "additionalTestOutputFile_ExampleStartupBenchmark_frameTiming_iter004_2026-05-28-15-41-42.perfetto-trace"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter004_2026-05-28-15-41-42.perfetto-trace"
+  }
+  details {
+    key: "EMULATOR_frame_duration_cpu_millis_p50"
+    value: "29.9352"
+  }
+  details {
+    key: "EMULATOR_frame_duration_cpu_millis_p90"
+    value: "52.5235"
+  }
+  details {
+    key: "EMULATOR_frame_duration_cpu_millis_p95"
+    value: "67.6644"
+  }
+  details {
+    key: "EMULATOR_frame_duration_cpu_millis_p99"
+    value: "313.4425"
+  }
+  details {
+    key: "EMULATOR_frame_overrun_millis_p50"
+    value: "26.308758"
+  }
+  details {
+    key: "EMULATOR_frame_overrun_millis_p90"
+    value: "68.795596"
+  }
+  details {
+    key: "EMULATOR_frame_overrun_millis_p95"
+    value: "260.188624"
+  }
+  details {
+    key: "EMULATOR_frame_overrun_millis_p99"
+    value: "2625.917886"
+  }
+  details {
+    key: "android.studio.display.benchmark"
+    value: "WARNING: Running on Emulator\nBenchmark is running on an emulator, which is not representative of\nreal user devices. Use a physical device to benchmark. Emulator\nbenchmark improvements might not carry over to a real user\'s\nexperience (or even regress real device performance).\n\nExampleStartupBenchmark_frameTiming\nframeDurationCpuMs   P50     29.9,   P90     52.5,   P95     67.7,   P99    313.4\nframeOverrunMs       P50     26.3,   P90     68.8,   P95    260.2,   P99  2,625.9\n"
+  }
+  details {
+    key: "android.studio.v2display.benchmark"
+    value: "WARNING: Running on Emulator\nBenchmark is running on an emulator, which is not representative of\nreal user devices. Use a physical device to benchmark. Emulator\nbenchmark improvements might not carry over to a real user\'s\nexperience (or even regress real device performance).\n\nExampleStartupBenchmark_frameTiming\nframeDurationCpuMs   P50     29.9,   P90     52.5,   P95     67.7,   P99    313.4\nframeOverrunMs       P50     26.3,   P90     68.8,   P95    260.2,   P99  2,625.9\nTraces: Iteration [0](file://ExampleStartupBenchmark_frameTiming_iter000_2026-05-28-15-41-24.perfetto-trace) [1](file://ExampleStartupBenchmark_frameTiming_iter001_2026-05-28-15-41-29.perfetto-trace) [2](file://ExampleStartupBenchmark_frameTiming_iter002_2026-05-28-15-41-33.perfetto-trace) [3](file://ExampleStartupBenchmark_frameTiming_iter003_2026-05-28-15-41-37.perfetto-trace) [4](file://ExampleStartupBenchmark_frameTiming_iter004_2026-05-28-15-41-42.perfetto-trace)\n"
+  }
+  details {
+    key: "android.studio.v2display.benchmark.outputDirPath"
+    value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output"
+  }
+}
+output_artifact {
+  label {
+    label: "test-results.log"
+    namespace: "com.google.testing.platform.runtime.android.driver.AndroidInstrumentationDriver"
+  }
+  source_path {
+    path: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\androidTest-results\\connected\\benchmark\\Pixel_8(AVD) - 14\\testlog\\test-results.log"
+  }
+  type: TEST_DATA
+  mime_type: "text/plain"
+}

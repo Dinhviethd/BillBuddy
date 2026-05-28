@@ -1,0 +1,75 @@
+INFO: Constructing runner from config.
+INFO: Configuring Android Instrumentation driver: android_instrumentation_runtime {
+  instrumentation_info {
+    app_package: "com.example.billbuddy"
+    test_package: "com.example.billbuddy.benchmark"
+    test_runner_class: "androidx.test.runner.AndroidJUnitRunner"
+  }
+  instrumentation_args {
+    args_map {
+      key: "additionalTestOutputDir"
+      value: "/sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output"
+    }
+    args_map {
+      key: "androidx.benchmark.suppressErrors"
+      value: "EMULATOR"
+    }
+  }
+}
+am_instrument_timeout: 31536000
+
+INFO: Configuring AndroidTestApkInstallerPlugin: apks_to_install {
+  apk_paths: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\app\\build\\outputs\\apk\\benchmark\\app-benchmark.apk"
+  install_options {
+  }
+  uninstall_after_test: true
+}
+apks_to_install {
+  apk_paths: "D:\\Nam3Ky2\\Mobile\\BTnhom\\BillBuddy\\benchmark\\build\\outputs\\apk\\benchmark\\benchmark-benchmark.apk"
+  install_options {
+  }
+  uninstall_after_test: true
+}
+instrumentation_target_package_id: "com.example.billbuddy.benchmark"
+
+INFO: No installables found in test fixture. Nothing to install.
+INFO: Installing [D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\app\build\outputs\apk\benchmark\app-benchmark.apk] on device emulator-5554.
+INFO: Installing [D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\apk\benchmark\benchmark-benchmark.apk] on device emulator-5554.
+INFO: Start logcat streaming.
+INFO: Running Android Instrumentation driver.
+INFO: Copying files from device to host: /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/com_example_billbuddy_benchmark-benchmarkData.json to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\com_example_billbuddy_benchmark-benchmarkData.json
+INFO: Copying files from device to host: /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter000_2026-05-28-15-41-24.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_frameTiming_iter000_2026-05-28-15-41-24.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter001_2026-05-28-15-41-29.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_frameTiming_iter001_2026-05-28-15-41-29.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter002_2026-05-28-15-41-33.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_frameTiming_iter002_2026-05-28-15-41-33.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter003_2026-05-28-15-41-37.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_frameTiming_iter003_2026-05-28-15-41-37.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter004_2026-05-28-15-41-42.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_frameTiming_iter004_2026-05-28-15-41-42.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/com_example_billbuddy_benchmark-benchmarkData.json to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\com_example_billbuddy_benchmark-benchmarkData.json
+INFO: Copying files from device to host: /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter000_2026-05-28-15-41-24.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_frameTiming_iter000_2026-05-28-15-41-24.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter001_2026-05-28-15-41-29.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_frameTiming_iter001_2026-05-28-15-41-29.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter002_2026-05-28-15-41-33.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_frameTiming_iter002_2026-05-28-15-41-33.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter003_2026-05-28-15-41-37.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_frameTiming_iter003_2026-05-28-15-41-37.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_frameTiming_iter004_2026-05-28-15-41-42.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_frameTiming_iter004_2026-05-28-15-41-42.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_startup_iter000_2026-05-28-15-40-32.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_startup_iter001_2026-05-28-15-40-40.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_startup_iter002_2026-05-28-15-40-47.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_startup_iter003_2026-05-28-15-40-54.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\ExampleStartupBenchmark_startup_iter004_2026-05-28-15-41-01.perfetto-trace
+INFO: Copying /sdcard/Android/media/com.example.billbuddy.benchmark/additional_test_output/com_example_billbuddy_benchmark-benchmarkData.json to D:\Nam3Ky2\Mobile\BTnhom\BillBuddy\benchmark\build\outputs\connected_android_test_additional_output\benchmark\connected\Pixel_8(AVD) - 14\com_example_billbuddy_benchmark-benchmarkData.json
+INFO: Stop logcat streaming.
+INFO: Uninstalling com.example.billbuddy for device emulator-5554.
+INFO: Uninstalling com.example.billbuddy.benchmark for device emulator-5554.
+INFO: Execute com.example.benchmark.ExampleStartupBenchmark.startup: PASSED
+INFO: Execute com.example.benchmark.ExampleStartupBenchmark.frameTiming: PASSED

@@ -234,8 +234,7 @@ class ExpenseViewModel @Inject constructor(
         }
 
         // Filter out dismissed
-        val filteredNotifications = notifications.filter { it.id !in _dismissedNotifications.value }
-        _expenseState.value = _expenseState.value.copy(notifications = filteredNotifications)
+        _expenseState.value = _expenseState.value.copy(notifications = notifications)
     }
 
     private fun observePendingDebts() {
@@ -248,19 +247,6 @@ class ExpenseViewModel @Inject constructor(
                 updateNotifications()
             }
         }.launchIn(viewModelScope)
-    }
-
-    private val _dismissedNotifications = MutableStateFlow<Set<String>>(emptySet())
-
-    fun removeNotification(id: String) {
-        _dismissedNotifications.value = _dismissedNotifications.value + id
-        updateNotifications()
-    }
-
-    fun clearAllNotifications() {
-        val allIds = _expenseState.value.notifications.map { it.id }.toSet()
-        _dismissedNotifications.value = _dismissedNotifications.value + allIds
-        updateNotifications()
     }
 
     fun setBudget(categoryId: String, amount: Long) {

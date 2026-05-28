@@ -48,7 +48,7 @@ fun DebtDetailScreen(
                 }
             )
         },
-        containerColor = Color(0xFFF8F9FA)
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         when (debtState) {
             is Resource.Loading -> {

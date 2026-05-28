@@ -55,9 +55,7 @@ fun ProfileScreen(
     onNavigateToGroups: () -> Unit,
     onNavigateToDebts: () -> Unit,
     onSignOut: () -> Unit,
-    notifications: List<AppNotification> = emptyList(),
-    onRemoveNotification: (String) -> Unit = {},
-    onClearAll: () -> Unit = {}
+    notifications: List<AppNotification> = emptyList()
 ) {
     var showSignOutDialog by remember { mutableStateOf(false) }
     var showBudgetDialog by remember { mutableStateOf(false) }
@@ -102,9 +100,7 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             ProfileTopBar(
-                notifications = notifications,
-                onRemoveNotification = onRemoveNotification,
-                onClearAll = onClearAll
+                notifications = notifications
             )
         },
         bottomBar = {
@@ -135,7 +131,7 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
+                .background(MaterialTheme.colorScheme.background),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -187,27 +183,6 @@ fun ProfileScreen(
                         title = "Hạn mức chi tiêu",
                         subtitle = "Thiết lập cảnh báo chi tiêu",
                         onClick = { showBudgetListDialog = true }
-                    ),
-                    SettingItem(
-                        icon = Icons.Default.Notifications,
-                        iconBgColor = Color(0xFFFFCCBC),
-                        iconTint = Color(0xFFE64A19),
-                        title = "Thông báo",
-                        subtitle = "Cài đặt nhắc nhở"
-                    ),
-                    SettingItem(
-                        icon = Icons.Default.Lock,
-                        iconBgColor = Color(0xFFF8BBD0),
-                        iconTint = Color(0xFFC62828),
-                        title = "Bảo mật",
-                        subtitle = "Mật khẩu & bảo vệ"
-                    ),
-                    SettingItem(
-                        icon = Icons.Default.Language,
-                        iconBgColor = Color(0xFFD1C4E9),
-                        iconTint = Color(0xFF512DA8),
-                        title = "Ngôn ngữ & Tiền tệ",
-                        subtitle = "Tiếng Việt, VND"
                     )
                 )
                 SettingSection(title = "Cài đặt", items = settingItems)
@@ -225,9 +200,7 @@ fun ProfileScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileTopBar(
-    notifications: List<AppNotification>,
-    onRemoveNotification: (String) -> Unit,
-    onClearAll: () -> Unit
+    notifications: List<AppNotification>
 ) {
     CenterAlignedTopAppBar(
         title = {
@@ -238,9 +211,7 @@ fun ProfileTopBar(
         },
         actions = {
             NotificationIconButton(
-                notifications = notifications,
-                onRemoveNotification = onRemoveNotification,
-                onClearAll = onClearAll
+                notifications = notifications
             )
         }
     )

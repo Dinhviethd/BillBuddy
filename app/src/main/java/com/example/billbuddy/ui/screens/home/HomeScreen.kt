@@ -121,9 +121,7 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             HomeTopBar(
-                notifications = expenseState.notifications,
-                onRemoveNotification = { viewModel.removeNotification(it) },
-                onClearAll = { viewModel.clearAllNotifications() }
+                notifications = expenseState.notifications
             )
         },
         bottomBar = {
@@ -154,7 +152,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
+                .background(MaterialTheme.colorScheme.background),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -223,10 +221,6 @@ fun HomeScreen(
                     totalExpense = totalCurrentMonthExpense.toDouble(),
                     totalIncome = totalCurrentMonthIncome.toDouble()
                 )
-            }
-
-            item {
-                StatisticsInfoBox()
             }
 
             item { Spacer(modifier = Modifier.height(40.dp)) }
@@ -318,9 +312,7 @@ fun BudgetCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeTopBar(
-    notifications: List<AppNotification>,
-    onRemoveNotification: (String) -> Unit,
-    onClearAll: () -> Unit
+    notifications: List<AppNotification>
 ) {
     CenterAlignedTopAppBar(
         title = {
@@ -331,9 +323,7 @@ fun HomeTopBar(
         },
         actions = {
             NotificationIconButton(
-                notifications = notifications,
-                onRemoveNotification = onRemoveNotification,
-                onClearAll = onClearAll
+                notifications = notifications
             )
         }
     )
@@ -475,28 +465,6 @@ fun OverviewRow(icon: ImageVector, label: String, amount: String, color: Color) 
             Text(label, color = Color.Gray)
         }
         Text(amount, color = color, fontWeight = FontWeight.Medium)
-    }
-}
-
-@Composable
-fun StatisticsInfoBox() {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        color = Color(0xFFE3F2FD)
-    ) {
-        Row(modifier = Modifier.padding(12.dp)) {
-            Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF1976D2))
-            Spacer(modifier = Modifier.width(8.dp))
-            Column {
-                Text("Thống kê", fontWeight = FontWeight.Bold, color = Color(0xFF1976D2))
-                Text(
-                    "Bạn đã tiết kiệm được 42% so với mục tiêu chi tiêu tháng này",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.DarkGray
-                )
-            }
-        }
     }
 }
 

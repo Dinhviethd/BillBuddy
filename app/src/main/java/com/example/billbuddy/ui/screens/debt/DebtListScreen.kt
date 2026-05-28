@@ -34,9 +34,7 @@ fun DebtListScreen(
     onNavigateBack: () -> Unit,
     onNavigateToAddDebt: () -> Unit,
     onNavigateToDebtDetail: (String) -> Unit,
-    notifications: List<AppNotification> = emptyList(),
-    onRemoveNotification: (String) -> Unit = {},
-    onClearAll: () -> Unit = {}
+    notifications: List<AppNotification> = emptyList()
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val debtsState by viewModel.debtsState
@@ -53,9 +51,7 @@ fun DebtListScreen(
                 },
                 actions = {
                     NotificationIconButton(
-                        notifications = notifications,
-                        onRemoveNotification = onRemoveNotification,
-                        onClearAll = onClearAll
+                        notifications = notifications
                     )
                 }
             )

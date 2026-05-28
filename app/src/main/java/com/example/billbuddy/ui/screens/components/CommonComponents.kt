@@ -24,9 +24,7 @@ import com.example.billbuddy.data.model.NotificationType
 
 @Composable
 fun NotificationIconButton(
-    notifications: List<AppNotification>,
-    onRemoveNotification: (String) -> Unit = {},
-    onClearAll: () -> Unit = {}
+    notifications: List<AppNotification>
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -55,9 +53,7 @@ fun NotificationIconButton(
     if (showDialog) {
         NotificationDialog(
             notifications = notifications,
-            onDismiss = { showDialog = false },
-            onRemove = onRemoveNotification,
-            onClearAll = onClearAll
+            onDismiss = { showDialog = false }
         )
     }
 }
@@ -65,31 +61,16 @@ fun NotificationIconButton(
 @Composable
 fun NotificationDialog(
     notifications: List<AppNotification>,
-    onDismiss: () -> Unit,
-    onRemove: (String) -> Unit,
-    onClearAll: () -> Unit
+    onDismiss: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    "Thông báo",
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleLarge
-                )
-                if (notifications.isNotEmpty()) {
-                    TextButton(onClick = onClearAll) {
-                        Icon(Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Xóa hết", style = MaterialTheme.typography.labelMedium)
-                    }
-                }
-            }
+            Text(
+                "Thông báo",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleLarge
+            )
         },
         text = {
             Box(modifier = Modifier.heightIn(max = 450.dp, min = 100.dp)) {
@@ -117,8 +98,7 @@ fun NotificationDialog(
                     ) {
                         items(notifications, key = { it.id }) { notification ->
                             NotificationItemRow(
-                                notification = notification,
-                                onRemove = { onRemove(notification.id) }
+                                notification = notification
                             )
                         }
                     }
@@ -140,8 +120,7 @@ fun NotificationDialog(
 
 @Composable
 fun NotificationItemRow(
-    notification: AppNotification,
-    onRemove: () -> Unit
+    notification: AppNotification
 ) {
     val (icon, color, bgColor) = when (notification.type) {
         NotificationType.URGENT -> Triple(Icons.Default.Error, Color(0xFFD32F2F), Color(0xFFFFEBEE))
@@ -183,15 +162,6 @@ fun NotificationItemRow(
                     text = "Số tiền: ${notification.amount}đ",
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.Gray
-                )
-            }
-            
-            IconButton(onClick = onRemove, modifier = Modifier.size(32.dp)) {
-                Icon(
-                    Icons.Default.Close,
-                    contentDescription = "Xóa",
-                    tint = Color.Gray.copy(alpha = 0.6f),
-                    modifier = Modifier.size(16.dp)
                 )
             }
         }

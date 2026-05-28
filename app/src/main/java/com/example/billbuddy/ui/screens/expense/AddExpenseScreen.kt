@@ -9,8 +9,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,9 +19,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.billbuddy.data.model.AppNotification
-import com.example.billbuddy.data.model.NotificationType
-import com.example.billbuddy.ui.components.NotificationIconButton
 import com.example.billbuddy.ui.viewmodel.ExpenseViewModel
 import com.example.billbuddy.utils.Resource
 import java.util.Calendar
@@ -56,7 +51,6 @@ fun AddExpenseScreen(
     val expenseState by viewModel.expenseState.collectAsState()
     val categories = expenseState.categories
     val pendingDebts = expenseState.pendingDebts
-    val notifications = expenseState.notifications
 
     val saveState by viewModel.saveState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -92,25 +86,19 @@ fun AddExpenseScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Thêm mới chi tiêu", fontWeight = FontWeight.Bold) },
-                actions = {
-                    NotificationIconButton(
-                        notifications = notifications,
-                        onRemoveNotification = { viewModel.removeNotification(it) },
-                        onClearAll = { viewModel.clearAllNotifications() }
-                    )
-                },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.White
                 )
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(Color(0xFFF8F9FA))
+                .background(MaterialTheme.colorScheme.background)
                 .padding(16.dp)
         ) {
             Card(
@@ -123,39 +111,6 @@ fun AddExpenseScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    if (notifications.isNotEmpty()) {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3E0)),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                notifications.forEach { notify ->
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.padding(vertical = 2.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = when(notify.type) {
-                                                NotificationType.URGENT -> Icons.Default.Error
-                                                else -> Icons.Default.Notifications
-                                            },
-                                            contentDescription = null,
-                                            tint = if (notify.type == NotificationType.URGENT) Color.Red else Color(0xFFE65100),
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(
-                                            notify.message, 
-                                            color = if (notify.type == NotificationType.URGENT) Color.Red else Color(0xFFE65100), 
-                                            fontSize = 12.sp
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.AddCircle,

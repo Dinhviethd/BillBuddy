@@ -16,9 +16,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.billbuddy.data.model.AppNotification
 import com.example.billbuddy.data.model.Debt
 import com.example.billbuddy.data.model.DebtStatus
 import com.example.billbuddy.ui.theme.AppBackground
+import com.example.billbuddy.ui.components.NotificationIconButton
 import com.example.billbuddy.ui.viewmodel.DebtViewModel
 import com.example.billbuddy.utils.Resource
 import java.text.NumberFormat
@@ -31,7 +33,10 @@ fun DebtListScreen(
     viewModel: DebtViewModel,
     onNavigateBack: () -> Unit,
     onNavigateToAddDebt: () -> Unit,
-    onNavigateToDebtDetail: (String) -> Unit
+    onNavigateToDebtDetail: (String) -> Unit,
+    notifications: List<AppNotification> = emptyList(),
+    onRemoveNotification: (String) -> Unit = {},
+    onClearAll: () -> Unit = {}
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val debtsState by viewModel.debtsState
@@ -47,9 +52,11 @@ fun DebtListScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More")
-                    }
+                    NotificationIconButton(
+                        notifications = notifications,
+                        onRemoveNotification = onRemoveNotification,
+                        onClearAll = onClearAll
+                    )
                 }
             )
         },

@@ -19,8 +19,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.billbuddy.data.model.AppNotification
 import com.example.billbuddy.navigation.Screen
 import com.example.billbuddy.ui.components.AppBottomNavigation
+import com.example.billbuddy.ui.components.NotificationIconButton
 import com.example.billbuddy.ui.viewmodel.AuthViewModel
 import com.example.billbuddy.utils.Resource
 
@@ -45,7 +47,10 @@ fun ProfileScreen(
     onNavigateToChangePassword: () -> Unit,
     onNavigateToGroups: () -> Unit,
     onNavigateToDebts: () -> Unit,
-    onSignOut: () -> Unit
+    onSignOut: () -> Unit,
+    notifications: List<AppNotification> = emptyList(),
+    onRemoveNotification: (String) -> Unit = {},
+    onClearAll: () -> Unit = {}
 ) {
     var showSignOutDialog by remember { mutableStateOf(false) }
 
@@ -60,7 +65,13 @@ fun ProfileScreen(
     }
 
     Scaffold(
-        topBar = { ProfileTopBar() },
+        topBar = {
+            ProfileTopBar(
+                notifications = notifications,
+                onRemoveNotification = onRemoveNotification,
+                onClearAll = onClearAll
+            )
+        },
         bottomBar = {
             AppBottomNavigation(
                 currentRoute = Screen.Profile.route,
@@ -170,7 +181,11 @@ fun ProfileScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileTopBar() {
+fun ProfileTopBar(
+    notifications: List<AppNotification>,
+    onRemoveNotification: (String) -> Unit,
+    onClearAll: () -> Unit
+) {
     CenterAlignedTopAppBar(
         title = {
             Text(
@@ -179,9 +194,11 @@ fun ProfileTopBar() {
             )
         },
         actions = {
-            IconButton(onClick = { }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "More")
-            }
+            NotificationIconButton(
+                notifications = notifications,
+                onRemoveNotification = onRemoveNotification,
+                onClearAll = onClearAll
+            )
         }
     )
 }

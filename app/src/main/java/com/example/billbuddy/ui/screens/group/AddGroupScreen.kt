@@ -15,6 +15,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.billbuddy.data.model.AppNotification
+import com.example.billbuddy.ui.components.NotificationIconButton
 import com.example.billbuddy.ui.viewmodel.GroupViewModel
 import com.example.billbuddy.utils.Resource
 
@@ -22,7 +24,10 @@ import com.example.billbuddy.utils.Resource
 @Composable
 fun AddGroupScreen(
     viewModel: GroupViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    notifications: List<AppNotification> = emptyList(),
+    onRemoveNotification: (String) -> Unit = {},
+    onClearAll: () -> Unit = {}
 ) {
     var groupName by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -56,9 +61,11 @@ fun AddGroupScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More")
-                    }
+                    NotificationIconButton(
+                        notifications = notifications,
+                        onRemoveNotification = onRemoveNotification,
+                        onClearAll = onClearAll
+                    )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.White

@@ -18,9 +18,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.billbuddy.data.model.AppNotification
 import com.example.billbuddy.data.model.CategoryType
 import com.example.billbuddy.navigation.Screen
 import com.example.billbuddy.ui.components.AppBottomNavigation
+import com.example.billbuddy.ui.components.NotificationIconButton
 import com.example.billbuddy.ui.viewmodel.ExpenseViewModel
 import com.google.firebase.Timestamp
 import java.text.NumberFormat
@@ -114,7 +116,11 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            HomeTopBar()
+            HomeTopBar(
+                notifications = expenseState.debtNotifications,
+                onRemoveNotification = { viewModel.removeNotification(it) },
+                onClearAll = { viewModel.clearAllNotifications() }
+            )
         },
         bottomBar = {
             AppBottomNavigation(
@@ -218,7 +224,11 @@ fun HomeScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeTopBar() {
+fun HomeTopBar(
+    notifications: List<AppNotification>,
+    onRemoveNotification: (String) -> Unit,
+    onClearAll: () -> Unit
+) {
     CenterAlignedTopAppBar(
         title = {
             Text(
@@ -227,9 +237,11 @@ fun HomeTopBar() {
             )
         },
         actions = {
-            IconButton(onClick = { }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "More")
-            }
+            NotificationIconButton(
+                notifications = notifications,
+                onRemoveNotification = onRemoveNotification,
+                onClearAll = onClearAll
+            )
         }
     )
 }

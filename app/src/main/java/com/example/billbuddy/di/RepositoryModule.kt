@@ -2,6 +2,8 @@ package com.example.billbuddy.di
 
 import com.example.billbuddy.data.repo.AuthRepository
 import com.example.billbuddy.data.repo.AuthRepositoryImpl
+import com.example.billbuddy.data.repo.BudgetRepository
+import com.example.billbuddy.data.repo.BudgetRepositoryImpl
 import com.example.billbuddy.data.repo.CategoryRepository
 import com.example.billbuddy.data.repo.CategoryRepositoryImpl
 import com.example.billbuddy.data.repo.DebtRepository
@@ -65,4 +67,10 @@ abstract class RepositoryModule {
     abstract fun bindExpenseSplitRepository(
         expenseSplitRepositoryImpl: ExpenseSplitRepositoryImpl
     ): ExpenseSplitRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBudgetRepository(
+        budgetRepositoryImpl: BudgetRepositoryImpl
+    ): BudgetRepository
 }

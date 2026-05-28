@@ -56,7 +56,7 @@ fun AddExpenseScreen(
     val expenseState by viewModel.expenseState.collectAsState()
     val categories = expenseState.categories
     val pendingDebts = expenseState.pendingDebts
-    val notifications = expenseState.debtNotifications
+    val notifications = expenseState.notifications
 
     val saveState by viewModel.saveState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }

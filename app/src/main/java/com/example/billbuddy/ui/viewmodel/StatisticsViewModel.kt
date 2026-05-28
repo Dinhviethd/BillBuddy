@@ -3,10 +3,12 @@ package com.example.billbuddy.ui.viewmodel
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.billbuddy.data.model.Budget
 import com.example.billbuddy.data.model.Category
 import com.example.billbuddy.data.model.CategoryType
 import com.example.billbuddy.data.model.Expense
 import com.example.billbuddy.data.repo.AuthRepository
+import com.example.billbuddy.data.repo.BudgetRepository
 import com.example.billbuddy.data.repo.CategoryRepository
 import com.example.billbuddy.data.repo.ExpenseRepository
 import com.example.billbuddy.utils.Resource
@@ -20,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @Immutable
@@ -39,6 +42,8 @@ data class StatisticsUiState(
     val balance: Double = 0.0,
     val expenseCount: Int = 0,
     val categorySummaries: List<CategorySummary> = emptyList(),
+    val categories: List<Category> = emptyList(),
+    val budgets: List<Budget> = emptyList(),
     val hasData: Boolean = false,
 )
 
@@ -46,6 +51,7 @@ data class StatisticsUiState(
 class StatisticsViewModel @Inject constructor(
     private val expenseRepository: ExpenseRepository,
     private val categoryRepository: CategoryRepository,
+    private val budgetRepository: BudgetRepository,
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
@@ -97,10 +103,11 @@ class StatisticsViewModel @Inject constructor(
 
         combine(
             expenseRepository.observeExpenses(),
-            categoryRepository.getCategories(userId)
-        ) { expenseRes, categoryRes ->
+            categoryRepository.getCategories(userId),
+            budgetRepository.getBudgets(userId)
+        ) { expenseRes, categoryRes, budgetRes ->
             when {
-                (expenseRes is Resource.Loading || categoryRes is Resource.Loading) -> {
+                (expenseRes is Resource.Loading || categoryRes is Resource.Loading || budgetRes is Resource.Loading) -> {
                     _uiState.update { it.copy(isLoading = true, errorMessage = null) }
                 }
                 expenseRes is Resource.Error -> {
@@ -109,14 +116,41 @@ class StatisticsViewModel @Inject constructor(
                 categoryRes is Resource.Error -> {
                     _uiState.update { it.copy(isLoading = false, errorMessage = categoryRes.message) }
                 }
-                expenseRes is Resource.Success && categoryRes is Resource.Success -> {
+                budgetRes is Resource.Error -> {
+                    _uiState.update { it.copy(isLoading = false, errorMessage = budgetRes.message) }
+                }
+                expenseRes is Resource.Success && categoryRes is Resource.Success && budgetRes is Resource.Success -> {
                     allExpenses = expenseRes.data.orEmpty()
                     categories = categoryRes.data.orEmpty()
-                    _uiState.update { it.copy(isLoading = false, errorMessage = null) }
+                    _uiState.update { it.copy(
+                        isLoading = false, 
+                        errorMessage = null,
+                        categories = categories,
+                        budgets = budgetRes.data.orEmpty()
+                    ) }
                     recalculate()
                 }
             }
         }.launchIn(viewModelScope)
+    }
+
+    fun setBudget(categoryId: String, amount: Long) {
+        val uid = authRepository.currentUser?.uid ?: return
+        val budget = Budget(
+            userId = uid,
+            categoryId = categoryId,
+            amount = amount,
+            name = if (categoryId.isEmpty()) "Hạn mức tổng" else "Hạn mức danh mục"
+        )
+        viewModelScope.launch {
+            budgetRepository.addBudget(budget).collect { }
+        }
+    }
+
+    fun deleteBudget(budgetId: String) {
+        viewModelScope.launch {
+            budgetRepository.deleteBudget(budgetId).collect { }
+        }
     }
 
     private fun recalculate() {

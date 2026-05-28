@@ -20,11 +20,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.billbuddy.data.model.AppNotification
+import com.example.billbuddy.data.model.Budget
+import com.example.billbuddy.data.model.Category
+import com.example.billbuddy.data.model.CategoryType
 import com.example.billbuddy.navigation.Screen
 import com.example.billbuddy.ui.components.AppBottomNavigation
 import com.example.billbuddy.ui.components.NotificationIconButton
+import com.example.billbuddy.ui.theme.AmberDark
 import com.example.billbuddy.ui.viewmodel.AuthViewModel
+import com.example.billbuddy.ui.viewmodel.StatisticsViewModel
 import com.example.billbuddy.utils.Resource
+import java.util.Locale
 
 data class SettingItem(
     val icon: ImageVector,
@@ -39,6 +45,7 @@ data class SettingItem(
 @Composable
 fun ProfileScreen(
     viewModel: AuthViewModel,
+    statsViewModel: StatisticsViewModel,
     onNavigateToHome: () -> Unit,
     onNavigateToCalendar: () -> Unit,
     onNavigateToAddExpense: () -> Unit,
@@ -53,6 +60,10 @@ fun ProfileScreen(
     onClearAll: () -> Unit = {}
 ) {
     var showSignOutDialog by remember { mutableStateOf(false) }
+    var showBudgetDialog by remember { mutableStateOf(false) }
+    var showBudgetListDialog by remember { mutableStateOf(false) }
+
+    val statsUiState by statsViewModel.uiState.collectAsState()
 
     if (showSignOutDialog) {
         SignOutDialog(
@@ -61,6 +72,30 @@ fun ProfileScreen(
                 onSignOut()
             },
             onDismiss = { showSignOutDialog = false }
+        )
+    }
+
+    if (showBudgetDialog) {
+        BudgetDialog(
+            categories = statsUiState.categories,
+            onDismiss = { showBudgetDialog = false },
+            onConfirm = { categoryId, amount ->
+                statsViewModel.setBudget(categoryId, amount)
+                showBudgetDialog = false
+            }
+        )
+    }
+
+    if (showBudgetListDialog) {
+        BudgetListDialog(
+            budgets = statsUiState.budgets,
+            categories = statsUiState.categories,
+            onDismiss = { showBudgetListDialog = false },
+            onDeleteBudget = { statsViewModel.deleteBudget(it) },
+            onAddBudget = {
+                showBudgetListDialog = false
+                showBudgetDialog = true
+            }
         )
     }
 
@@ -145,6 +180,14 @@ fun ProfileScreen(
 
             item {
                 val settingItems = listOf(
+                    SettingItem(
+                        icon = Icons.Default.Savings,
+                        iconBgColor = Color(0xFFFFF9C4),
+                        iconTint = Color(0xFFFBC02D),
+                        title = "Hạn mức chi tiêu",
+                        subtitle = "Thiết lập cảnh báo chi tiêu",
+                        onClick = { showBudgetListDialog = true }
+                    ),
                     SettingItem(
                         icon = Icons.Default.Notifications,
                         iconBgColor = Color(0xFFFFCCBC),
@@ -431,4 +474,137 @@ fun SignOutDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
             }
         }
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BudgetDialog(
+    categories: List<Category>,
+    onDismiss: () -> Unit,
+    onConfirm: (String, Long) -> Unit
+) {
+    var selectedCategoryId by remember { mutableStateOf("") }
+    var amount by remember { mutableStateOf("") }
+    var expanded by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Thiết lập hạn mức") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box {
+                    OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
+                        val name = categories.find { it.documentId == selectedCategoryId }?.name ?: "Chọn danh mục (Trống = Tổng)"
+                        Text(name)
+                    }
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        DropdownMenuItem(text = { Text("Tổng chi tiêu") }, onClick = { selectedCategoryId = ""; expanded = false })
+                        categories.filter { it.type == CategoryType.EXPENSE }.forEach { category ->
+                            DropdownMenuItem(text = { Text(category.name) }, onClick = { selectedCategoryId = category.documentId; expanded = false })
+                        }
+                    }
+                }
+                OutlinedTextField(
+                    value = amount,
+                    onValueChange = { amount = it },
+                    label = { Text("Số tiền hạn mức") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = { 
+                val amt = amount.toLongOrNull() ?: 0L
+                if (amt > 0) onConfirm(selectedCategoryId, amt)
+            }) {
+                Text("Lưu")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Hủy")
+            }
+        }
+    )
+}
+
+@Composable
+fun BudgetListDialog(
+    budgets: List<Budget>,
+    categories: List<Category>,
+    onDismiss: () -> Unit,
+    onDeleteBudget: (String) -> Unit,
+    onAddBudget: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Hạn mức chi tiêu")
+                IconButton(onClick = { onDismiss() }) {
+                    Icon(Icons.Default.Close, contentDescription = "Close")
+                }
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (budgets.isEmpty()) {
+                    Text(
+                        "Chưa có hạn mức nào được thiết lập.",
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(vertical = 16.dp)
+                    )
+                } else {
+                    budgets.forEach { budget ->
+                        val categoryName = categories.find { it.documentId == budget.categoryId }?.name ?: "Tổng chi tiêu"
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
+                                .padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(categoryName, fontWeight = FontWeight.Medium)
+                                Text(formatMoney(budget.amount.toDouble()), color = AmberDark, fontWeight = FontWeight.Bold)
+                            }
+                            IconButton(onClick = { onDeleteBudget(budget.documentId) }) {
+                                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Gray)
+                            }
+                        }
+                    }
+                }
+                
+                Button(
+                    onClick = onAddBudget,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = AmberDark)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Thêm hạn mức")
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Đóng")
+            }
+        }
+    )
+}
+
+private fun formatMoney(amount: Double): String {
+    val formatter = java.text.NumberFormat.getCurrencyInstance(Locale.forLanguageTag("vi-VN"))
+    return formatter.format(amount).replace("₫", "đ")
 }

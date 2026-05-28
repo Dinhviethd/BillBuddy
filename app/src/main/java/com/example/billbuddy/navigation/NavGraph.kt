@@ -28,6 +28,7 @@ import com.example.billbuddy.ui.viewmodel.CalendarViewModel
 import com.example.billbuddy.ui.viewmodel.DebtViewModel
 import com.example.billbuddy.ui.viewmodel.ExpenseViewModel
 import com.example.billbuddy.ui.viewmodel.GroupViewModel
+import com.example.billbuddy.ui.viewmodel.StatisticsViewModel
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -102,7 +103,7 @@ fun NavGraph(navController: NavHostController) {
                 onNavigateProfile = {
                     navController.navigate(Screen.Profile.route)
                 },
-                notifications = expenseState.debtNotifications,
+                notifications = expenseState.notifications,
                 onRemoveNotification = { expenseViewModel.removeNotification(it) },
                 onClearAll = { expenseViewModel.clearAllNotifications() }
             )
@@ -120,7 +121,7 @@ fun NavGraph(navController: NavHostController) {
                 onNavigateToCalendar = { navController.navigate(Screen.Calendar.route) },
                 onNavigateToAddExpense = { navController.navigate(Screen.AddExpense.route) },
                 onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
-                notifications = expenseState.debtNotifications,
+                notifications = expenseState.notifications,
                 onRemoveNotification = { expenseViewModel.removeNotification(it) },
                 onClearAll = { expenseViewModel.clearAllNotifications() }
             )
@@ -128,9 +129,11 @@ fun NavGraph(navController: NavHostController) {
 
         composable(Screen.Profile.route) {
             val expenseViewModel: ExpenseViewModel = hiltViewModel()
+            val statsViewModel: StatisticsViewModel = hiltViewModel()
             val expenseState by expenseViewModel.expenseState.collectAsState()
             ProfileScreen(
                 viewModel = authViewModel,
+                statsViewModel = statsViewModel,
                 onNavigateToHome = {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Home.route) { inclusive = true }
@@ -164,7 +167,7 @@ fun NavGraph(navController: NavHostController) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
-                notifications = expenseState.debtNotifications,
+                notifications = expenseState.notifications,
                 onRemoveNotification = { expenseViewModel.removeNotification(it) },
                 onClearAll = { expenseViewModel.clearAllNotifications() }
             )
@@ -215,7 +218,7 @@ fun NavGraph(navController: NavHostController) {
             AddGroupScreen(
                 viewModel = groupViewModel,
                 onNavigateBack = { navController.popBackStack() },
-                notifications = expenseState.debtNotifications,
+                notifications = expenseState.notifications,
                 onRemoveNotification = { expenseViewModel.removeNotification(it) },
                 onClearAll = { expenseViewModel.clearAllNotifications() }
             )
@@ -244,7 +247,7 @@ fun NavGraph(navController: NavHostController) {
                 onNavigateToDebtDetail = { debtId ->
                     navController.navigate(Screen.DebtDetail.createRoute(debtId))
                 },
-                notifications = expenseState.debtNotifications,
+                notifications = expenseState.notifications,
                 onRemoveNotification = { expenseViewModel.removeNotification(it) },
                 onClearAll = { expenseViewModel.clearAllNotifications() }
             )

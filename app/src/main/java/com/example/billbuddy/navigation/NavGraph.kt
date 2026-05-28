@@ -103,9 +103,7 @@ fun NavGraph(navController: NavHostController) {
                 onNavigateProfile = {
                     navController.navigate(Screen.Profile.route)
                 },
-                notifications = expenseState.notifications,
-                onRemoveNotification = { expenseViewModel.removeNotification(it) },
-                onClearAll = { expenseViewModel.clearAllNotifications() }
+                notifications = expenseState.notifications
             )
         }
 
@@ -121,9 +119,7 @@ fun NavGraph(navController: NavHostController) {
                 onNavigateToCalendar = { navController.navigate(Screen.Calendar.route) },
                 onNavigateToAddExpense = { navController.navigate(Screen.AddExpense.route) },
                 onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
-                notifications = expenseState.notifications,
-                onRemoveNotification = { expenseViewModel.removeNotification(it) },
-                onClearAll = { expenseViewModel.clearAllNotifications() }
+                notifications = expenseState.notifications
             )
         }
 
@@ -167,9 +163,7 @@ fun NavGraph(navController: NavHostController) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
-                notifications = expenseState.notifications,
-                onRemoveNotification = { expenseViewModel.removeNotification(it) },
-                onClearAll = { expenseViewModel.clearAllNotifications() }
+                notifications = expenseState.notifications
             )
         }
 
@@ -218,9 +212,7 @@ fun NavGraph(navController: NavHostController) {
             AddGroupScreen(
                 viewModel = groupViewModel,
                 onNavigateBack = { navController.popBackStack() },
-                notifications = expenseState.notifications,
-                onRemoveNotification = { expenseViewModel.removeNotification(it) },
-                onClearAll = { expenseViewModel.clearAllNotifications() }
+                notifications = expenseState.notifications
             )
         }
 
@@ -247,9 +239,7 @@ fun NavGraph(navController: NavHostController) {
                 onNavigateToDebtDetail = { debtId ->
                     navController.navigate(Screen.DebtDetail.createRoute(debtId))
                 },
-                notifications = expenseState.notifications,
-                onRemoveNotification = { expenseViewModel.removeNotification(it) },
-                onClearAll = { expenseViewModel.clearAllNotifications() }
+                notifications = expenseState.notifications
             )
         }
 

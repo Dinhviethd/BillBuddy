@@ -37,8 +37,6 @@ fun CalendarScreen(
     onNavigateStatistics: () -> Unit,
     onNavigateProfile: () -> Unit,
     notifications: List<AppNotification> = emptyList(),
-    onRemoveNotification: (String) -> Unit = {},
-    onClearAll: () -> Unit = {},
     viewModel: CalendarViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -55,9 +53,7 @@ fun CalendarScreen(
                 },
                 actions = {
                     NotificationIconButton(
-                        notifications = notifications,
-                        onRemoveNotification = onRemoveNotification,
-                        onClearAll = onClearAll
+                        notifications = notifications
                     )
                 }
             )

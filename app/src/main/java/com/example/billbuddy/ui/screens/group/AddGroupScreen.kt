@@ -25,9 +25,7 @@ import com.example.billbuddy.utils.Resource
 fun AddGroupScreen(
     viewModel: GroupViewModel,
     onNavigateBack: () -> Unit,
-    notifications: List<AppNotification> = emptyList(),
-    onRemoveNotification: (String) -> Unit = {},
-    onClearAll: () -> Unit = {}
+    notifications: List<AppNotification> = emptyList()
 ) {
     var groupName by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -62,9 +60,7 @@ fun AddGroupScreen(
                 },
                 actions = {
                     NotificationIconButton(
-                        notifications = notifications,
-                        onRemoveNotification = onRemoveNotification,
-                        onClearAll = onClearAll
+                        notifications = notifications
                     )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -72,13 +68,14 @@ fun AddGroupScreen(
                 )
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(Color(0xFFF8F9FA))
+                .background(MaterialTheme.colorScheme.background)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)

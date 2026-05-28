@@ -25,8 +25,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.billbuddy.data.model.AppNotification
 import com.example.billbuddy.navigation.Screen
 import com.example.billbuddy.ui.components.AppBottomNavigation
+import com.example.billbuddy.ui.components.NotificationIconButton
 import com.example.billbuddy.ui.theme.AmberDark
 import com.example.billbuddy.ui.theme.Beige
 import com.example.billbuddy.ui.theme.LightAmber
@@ -57,6 +59,9 @@ fun StatisticsScreen(
     onNavigateToCalendar: () -> Unit,
     onNavigateToAddExpense: () -> Unit,
     onNavigateToProfile: () -> Unit,
+    notifications: List<AppNotification> = emptyList(),
+    onRemoveNotification: (String) -> Unit = {},
+    onClearAll: () -> Unit = {},
     viewModel: StatisticsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -92,9 +97,11 @@ fun StatisticsScreen(
                     )
                 },
                 actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More")
-                    }
+                    NotificationIconButton(
+                        notifications = notifications,
+                        onRemoveNotification = onRemoveNotification,
+                        onClearAll = onClearAll
+                    )
                 }
             )
         },

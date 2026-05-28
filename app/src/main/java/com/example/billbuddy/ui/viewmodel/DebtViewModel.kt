@@ -5,15 +5,20 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.billbuddy.data.model.Category
 import com.example.billbuddy.data.model.Debt
 import com.example.billbuddy.data.model.DebtStatus
+import com.example.billbuddy.data.model.Expense
+import com.example.billbuddy.data.repo.CategoryRepository
 import com.example.billbuddy.data.repo.DebtRepository
+import com.example.billbuddy.data.repo.ExpenseRepository
 import com.example.billbuddy.data.repo.UserRepository
 import com.example.billbuddy.utils.Resource
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -23,6 +28,8 @@ import javax.inject.Inject
 class DebtViewModel @Inject constructor(
     private val debtRepository: DebtRepository,
     private val userRepository: UserRepository,
+    private val expenseRepository: ExpenseRepository,
+    private val categoryRepository: CategoryRepository,
     private val auth: FirebaseAuth
 ) : ViewModel() {
 
@@ -154,8 +161,54 @@ class DebtViewModel @Inject constructor(
         debtRepository.updateDebtStatus(debtId, status).launchIn(viewModelScope)
     }
 
+    fun settleDebt(debt: Debt) {
+        val uid = auth.currentUser?.uid ?: return
+        if (debt.debtorId != uid) return
+
+        viewModelScope.launch {
+            // 1. Fetch categories to find a suitable one (e.g., "Trả nợ" or first available)
+            val catResult = categoryRepository.getCategories(uid).first()
+            val categoryId = if (catResult is Resource.Success) {
+                catResult.data?.find { it.name.contains("Trả nợ", ignoreCase = true) }?.documentId 
+                    ?: catResult.data?.firstOrNull()?.documentId ?: ""
+            } else ""
+
+            if (categoryId.isEmpty()) {
+                // If no category exists, we might need a default or show error. 
+                // For simplicity, let's assume at least one category exists or handle accordingly.
+            }
+
+            // 2. Create Expense
+            val expense = Expense(
+                amount = debt.amount,
+                description = "Trả nợ: ${debt.description}",
+                date = Timestamp.now(),
+                categoryId = categoryId,
+                userId = uid,
+                createdAt = Timestamp.now()
+            )
+
+            expenseRepository.addExpense(expense).collect { result ->
+                if (result is Resource.Success) {
+                    // 3. Update Debt Status
+                    debtRepository.updateDebtStatus(debt.documentId, DebtStatus.SETTLED).collect {}
+                }
+            }
+        }
+    }
+
     fun deleteDebt(debtId: String) {
-        debtRepository.deleteDebt(debtId).launchIn(viewModelScope)
+        val uid = auth.currentUser?.uid ?: return
+        viewModelScope.launch {
+            debtRepository.getDebtById(debtId).collect { result ->
+                if (result is Resource.Success) {
+                    val debt = result.data
+                    if (debt != null && debt.creditorId == uid && debt.status == DebtStatus.SETTLED) {
+                        debtRepository.deleteDebt(debtId).collect { }
+                    }
+                }
+            }
+        }
     }
 
     fun loadDebtById(debtId: String) {

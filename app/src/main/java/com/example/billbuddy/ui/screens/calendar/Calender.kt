@@ -19,9 +19,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.billbuddy.data.model.AppNotification
 import com.example.billbuddy.data.model.CategoryType
 import com.example.billbuddy.navigation.Screen
 import com.example.billbuddy.ui.components.AppBottomNavigation
+import com.example.billbuddy.ui.components.NotificationIconButton
 import com.example.billbuddy.ui.theme.AppBackground
 import com.example.billbuddy.ui.theme.LightAmber
 import com.example.billbuddy.ui.viewmodel.CalendarViewModel
@@ -34,6 +36,9 @@ fun CalendarScreen(
     onNavigateAddExpense: () -> Unit,
     onNavigateStatistics: () -> Unit,
     onNavigateProfile: () -> Unit,
+    notifications: List<AppNotification> = emptyList(),
+    onRemoveNotification: (String) -> Unit = {},
+    onClearAll: () -> Unit = {},
     viewModel: CalendarViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -49,9 +54,11 @@ fun CalendarScreen(
                     )
                 },
                 actions = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.MoreVert, null)
-                    }
+                    NotificationIconButton(
+                        notifications = notifications,
+                        onRemoveNotification = onRemoveNotification,
+                        onClearAll = onClearAll
+                    )
                 }
             )
         },

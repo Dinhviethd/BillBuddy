@@ -1,6 +1,8 @@
 package com.example.billbuddy.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -26,6 +28,7 @@ import com.example.billbuddy.ui.viewmodel.CalendarViewModel
 import com.example.billbuddy.ui.viewmodel.DebtViewModel
 import com.example.billbuddy.ui.viewmodel.ExpenseViewModel
 import com.example.billbuddy.ui.viewmodel.GroupViewModel
+import com.example.billbuddy.ui.viewmodel.StatisticsViewModel
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -64,6 +67,7 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(Screen.Home.route) {
             val expenseViewModel: ExpenseViewModel = hiltViewModel()
+            val expenseState by expenseViewModel.expenseState.collectAsState()
             HomeScreen(
                 viewModel = expenseViewModel,
                 onNavigateToAddExpense = { navController.navigate(Screen.AddExpense.route) },
@@ -83,6 +87,8 @@ fun NavGraph(navController: NavHostController) {
 
         composable(Screen.Calendar.route) {
             val calendarViewModel: CalendarViewModel = hiltViewModel()
+            val expenseViewModel: ExpenseViewModel = hiltViewModel()
+            val expenseState by expenseViewModel.expenseState.collectAsState()
             CalendarScreen(
                 viewModel = calendarViewModel,
                 onNavigateHome = {
@@ -96,11 +102,14 @@ fun NavGraph(navController: NavHostController) {
                 },
                 onNavigateProfile = {
                     navController.navigate(Screen.Profile.route)
-                }
+                },
+                notifications = expenseState.notifications
             )
         }
 
         composable(Screen.Statistics.route) {
+            val expenseViewModel: ExpenseViewModel = hiltViewModel()
+            val expenseState by expenseViewModel.expenseState.collectAsState()
             StatisticsScreen(
                 onNavigateToHome = {
                     navController.navigate(Screen.Home.route) {
@@ -109,13 +118,18 @@ fun NavGraph(navController: NavHostController) {
                 },
                 onNavigateToCalendar = { navController.navigate(Screen.Calendar.route) },
                 onNavigateToAddExpense = { navController.navigate(Screen.AddExpense.route) },
-                onNavigateToProfile = { navController.navigate(Screen.Profile.route) }
+                onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
+                notifications = expenseState.notifications
             )
         }
 
         composable(Screen.Profile.route) {
+            val expenseViewModel: ExpenseViewModel = hiltViewModel()
+            val statsViewModel: StatisticsViewModel = hiltViewModel()
+            val expenseState by expenseViewModel.expenseState.collectAsState()
             ProfileScreen(
                 viewModel = authViewModel,
+                statsViewModel = statsViewModel,
                 onNavigateToHome = {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Home.route) { inclusive = true }
@@ -148,7 +162,8 @@ fun NavGraph(navController: NavHostController) {
                         popUpTo(Screen.Home.route) { inclusive = true }
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
-                }
+                },
+                notifications = expenseState.notifications
             )
         }
 
@@ -192,9 +207,12 @@ fun NavGraph(navController: NavHostController) {
 
         composable(Screen.AddGroup.route) {
             val groupViewModel: GroupViewModel = hiltViewModel()
+            val expenseViewModel: ExpenseViewModel = hiltViewModel()
+            val expenseState by expenseViewModel.expenseState.collectAsState()
             AddGroupScreen(
                 viewModel = groupViewModel,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                notifications = expenseState.notifications
             )
         }
 
@@ -210,6 +228,8 @@ fun NavGraph(navController: NavHostController) {
 
         composable(Screen.DebtList.route) {
             val debtViewModel: DebtViewModel = hiltViewModel()
+            val expenseViewModel: ExpenseViewModel = hiltViewModel()
+            val expenseState by expenseViewModel.expenseState.collectAsState()
             DebtListScreen(
                 viewModel = debtViewModel,
                 onNavigateBack = { navController.popBackStack() },
@@ -218,7 +238,8 @@ fun NavGraph(navController: NavHostController) {
                 },
                 onNavigateToDebtDetail = { debtId ->
                     navController.navigate(Screen.DebtDetail.createRoute(debtId))
-                }
+                },
+                notifications = expenseState.notifications
             )
         }
 

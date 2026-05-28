@@ -25,8 +25,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.billbuddy.data.model.AppNotification
 import com.example.billbuddy.navigation.Screen
 import com.example.billbuddy.ui.components.AppBottomNavigation
+import com.example.billbuddy.ui.components.NotificationIconButton
 import com.example.billbuddy.ui.theme.AmberDark
 import com.example.billbuddy.ui.theme.Beige
 import com.example.billbuddy.ui.theme.LightAmber
@@ -57,6 +59,7 @@ fun StatisticsScreen(
     onNavigateToCalendar: () -> Unit,
     onNavigateToAddExpense: () -> Unit,
     onNavigateToProfile: () -> Unit,
+    notifications: List<AppNotification> = emptyList(),
     viewModel: StatisticsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -92,9 +95,9 @@ fun StatisticsScreen(
                     )
                 },
                 actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More")
-                    }
+                    NotificationIconButton(
+                        notifications = notifications
+                    )
                 }
             )
         },
@@ -119,13 +122,14 @@ fun StatisticsScreen(
                 Icon(Icons.Default.Add, contentDescription = "Add", modifier = Modifier.size(32.dp))
             }
         },
-        floatingActionButtonPosition = FabPosition.Center
+        floatingActionButtonPosition = FabPosition.Center,
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(Color(0xFFFFF9EB))
+                .background(MaterialTheme.colorScheme.background)
                 .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.height(16.dp))

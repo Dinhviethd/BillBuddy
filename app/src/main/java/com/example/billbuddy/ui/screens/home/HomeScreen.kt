@@ -13,14 +13,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.billbuddy.data.model.AppNotification
+import com.example.billbuddy.data.model.Budget
+import com.example.billbuddy.data.model.Category
 import com.example.billbuddy.data.model.CategoryType
+import com.example.billbuddy.data.model.Expense
 import com.example.billbuddy.navigation.Screen
 import com.example.billbuddy.ui.components.AppBottomNavigation
+import com.example.billbuddy.ui.components.NotificationIconButton
 import com.example.billbuddy.ui.viewmodel.ExpenseViewModel
 import com.google.firebase.Timestamp
 import java.text.NumberFormat
@@ -114,7 +120,9 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            HomeTopBar()
+            HomeTopBar(
+                notifications = expenseState.notifications
+            )
         },
         bottomBar = {
             AppBottomNavigation(
@@ -144,7 +152,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
+                .background(MaterialTheme.colorScheme.background),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -180,6 +188,14 @@ fun HomeScreen(
                 }
             }
 
+            item {
+                BudgetSection(
+                    budgets = expenseState.budgets,
+                    expenses = expenses,
+                    categories = categoriesFromDb,
+                    selectedMonth = selectedMonth
+                )
+            }
 
             item {
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
@@ -207,18 +223,97 @@ fun HomeScreen(
                 )
             }
 
-            item {
-                StatisticsInfoBox()
-            }
-
             item { Spacer(modifier = Modifier.height(40.dp)) }
+        }
+    }
+}
+
+@Composable
+fun BudgetSection(
+    budgets: List<Budget>,
+    expenses: List<Expense>,
+    categories: List<Category>,
+    selectedMonth: YearMonth
+) {
+    if (budgets.isEmpty()) return
+
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        Text(
+            text = "Hạn mức chi tiêu",
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        budgets.forEach { budget ->
+            BudgetCard(budget, expenses, categories, selectedMonth)
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+fun BudgetCard(
+    budget: Budget,
+    expenses: List<Expense>,
+    categories: List<Category>,
+    selectedMonth: YearMonth
+) {
+    val category = categories.find { it.documentId == budget.categoryId }
+    val spent = expenses.filter { expense ->
+        val expenseDate = parseDate(expense.date)
+        val isInMonth = expenseDate?.let { YearMonth.from(it) == selectedMonth } ?: false
+        val isCorrectCategory = budget.categoryId.isEmpty() || expense.categoryId == budget.categoryId
+        val isExpense = categories.find { it.documentId == expense.categoryId }?.type == CategoryType.EXPENSE
+        isInMonth && isCorrectCategory && isExpense
+    }.sumOf { it.amount }
+
+    val progress = if (budget.amount > 0) (spent.toFloat() / budget.amount) else 0f
+    val color = if (progress > 1f) Color.Red else Color(0xFFE8B931)
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (budget.categoryId.isEmpty()) "Tổng chi tiêu" else (category?.name ?: "Danh mục"),
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium)
+                )
+                Text(
+                    text = "${formatCurrency(spent.toDouble())} / ${formatCurrency(budget.amount.toDouble())}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            LinearProgressIndicator(
+                progress = { progress.coerceIn(0f, 1f) },
+                modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
+                color = color,
+                trackColor = color.copy(alpha = 0.2f)
+            )
+            if (progress > 1f) {
+                Text(
+                    text = "Đã vượt hạn mức!",
+                    color = Color.Red,
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeTopBar() {
+fun HomeTopBar(
+    notifications: List<AppNotification>
+) {
     CenterAlignedTopAppBar(
         title = {
             Text(
@@ -227,9 +322,9 @@ fun HomeTopBar() {
             )
         },
         actions = {
-            IconButton(onClick = { }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "More")
-            }
+            NotificationIconButton(
+                notifications = notifications
+            )
         }
     )
 }
@@ -370,28 +465,6 @@ fun OverviewRow(icon: ImageVector, label: String, amount: String, color: Color) 
             Text(label, color = Color.Gray)
         }
         Text(amount, color = color, fontWeight = FontWeight.Medium)
-    }
-}
-
-@Composable
-fun StatisticsInfoBox() {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        color = Color(0xFFE3F2FD)
-    ) {
-        Row(modifier = Modifier.padding(12.dp)) {
-            Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF1976D2))
-            Spacer(modifier = Modifier.width(8.dp))
-            Column {
-                Text("Thống kê", fontWeight = FontWeight.Bold, color = Color(0xFF1976D2))
-                Text(
-                    "Bạn đã tiết kiệm được 42% so với mục tiêu chi tiêu tháng này",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.DarkGray
-                )
-            }
-        }
     }
 }
 

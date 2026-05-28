@@ -15,6 +15,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.billbuddy.data.model.AppNotification
+import com.example.billbuddy.ui.components.NotificationIconButton
 import com.example.billbuddy.ui.viewmodel.GroupViewModel
 import com.example.billbuddy.utils.Resource
 
@@ -22,7 +24,8 @@ import com.example.billbuddy.utils.Resource
 @Composable
 fun AddGroupScreen(
     viewModel: GroupViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    notifications: List<AppNotification> = emptyList()
 ) {
     var groupName by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -56,22 +59,23 @@ fun AddGroupScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More")
-                    }
+                    NotificationIconButton(
+                        notifications = notifications
+                    )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.White
                 )
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(Color(0xFFF8F9FA))
+                .background(MaterialTheme.colorScheme.background)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)

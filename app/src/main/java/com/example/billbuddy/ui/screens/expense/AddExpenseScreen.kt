@@ -9,7 +9,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -47,9 +46,11 @@ fun AddExpenseScreen(
     var selectedCategoryId by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
+    var selectedDebtId by remember { mutableStateOf<String?>(null) }
 
     val expenseState by viewModel.expenseState.collectAsState()
     val categories = expenseState.categories
+    val pendingDebts = expenseState.pendingDebts
 
     val saveState by viewModel.saveState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -85,23 +86,19 @@ fun AddExpenseScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Thêm mới chi tiêu", fontWeight = FontWeight.Bold) },
-                actions = {
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More")
-                    }
-                },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.White
                 )
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(Color(0xFFF8F9FA))
+                .background(MaterialTheme.colorScheme.background)
                 .padding(16.dp)
         ) {
             Card(
@@ -214,6 +211,50 @@ fun AddExpenseScreen(
                         )
                     }
 
+                    if (pendingDebts.isNotEmpty()) {
+                        Column {
+                            Text("Thanh toán nợ (tùy chọn)", color = Color.Gray, fontSize = 14.sp)
+                            var expanded by remember { mutableStateOf(false) }
+                            val selectedDebt = pendingDebts.find { it.documentId == selectedDebtId }
+                            
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                OutlinedButton(
+                                    onClick = { expanded = true },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
+                                ) {
+                                    Text(selectedDebt?.description ?: "Chọn khoản nợ để trả")
+                                }
+                                
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text("Không thanh toán nợ") },
+                                        onClick = {
+                                            selectedDebtId = null
+                                            expanded = false
+                                        }
+                                    )
+                                    pendingDebts.forEach { debt ->
+                                        DropdownMenuItem(
+                                            text = { Text("${debt.description} (${debt.amount} đ)") },
+                                            onClick = {
+                                                selectedDebtId = debt.documentId
+                                                if (amount.isBlank()) amount = debt.amount.toString()
+                                                if (note.isBlank()) note = "Trả nợ: ${debt.description}"
+                                                expanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
 
                     Row(
                         modifier = Modifier
@@ -239,7 +280,7 @@ fun AddExpenseScreen(
                                         snackbarHostState.showSnackbar("Vui lòng nhập danh mục và số tiền hợp lệ")
                                     }
                                 } else {
-                                    viewModel.addExpense(date, selectedCategoryId, parsedAmount, note.trim())
+                                    viewModel.addExpense(date, selectedCategoryId, parsedAmount, note.trim(), selectedDebtId)
                                 }
                             },
                             modifier = Modifier

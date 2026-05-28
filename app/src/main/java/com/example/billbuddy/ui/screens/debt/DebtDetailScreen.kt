@@ -48,7 +48,7 @@ fun DebtDetailScreen(
                 }
             )
         },
-        containerColor = Color(0xFFF8F9FA)
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         when (debtState) {
             is Resource.Loading -> {
@@ -194,59 +194,70 @@ fun ActionButtons(
     onNavigateBack: () -> Unit
 ) {
     val isCreditor = debt.creditorId == currentUserId
+    val isDebtor = debt.debtorId == currentUserId
     
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (debt.status == DebtStatus.PENDING) {
-            if (isCreditor) {
-                // Creditor can mark as settled
+            if (isDebtor) {
+                // Debtor sees "Pay" (Ideally this should navigate to AddExpenseScreen)
                 Button(
                     onClick = { 
-                        viewModel.updateDebtStatus(debt.documentId, DebtStatus.SETTLED)
+                        viewModel.settleDebt(debt)
                     },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF388E3C)),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text("ĐÁNH DẤU ĐÃ TRẢ", fontWeight = FontWeight.Bold)
-                }
-            } else {
-                // Debtor sees "How to pay" (just a message for now)
-                Button(
-                    onClick = { /* TODO: Payment integration */ },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E49E2)),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("THANH TOÁN NGAY", fontWeight = FontWeight.Bold)
+                    Text("THANH TOÁN (GHI CHI TIÊU)", fontWeight = FontWeight.Bold)
+                }
+            } else {
+                // Creditor sees wait status
+                OutlinedButton(
+                    onClick = { },
+                    enabled = false,
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("CHỜ THANH TOÁN", fontWeight = FontWeight.Bold)
                 }
             }
         } else {
-            // If SETTLED, show delete option (only for creditor as per standard practice, but user said "if SETTLE")
-            // Re-reading: "xóa nếu như trạng thái debt đã là SETTLE" - implies anyone can delete or specific role? 
-            // Usually, creditor manages the record.
-            OutlinedButton(
-                onClick = { 
-                    viewModel.deleteDebt(debt.documentId)
-                    onNavigateBack()
-                },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color.Red),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("XÓA LỊCH SỬ NỢ", fontWeight = FontWeight.Bold)
-            }
-        }
-        
-        // Creditor can undo settlement if it was accidental
-        if (debt.status == DebtStatus.SETTLED && isCreditor) {
-            TextButton(
-                onClick = { 
-                    viewModel.updateDebtStatus(debt.documentId, DebtStatus.PENDING)
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Đánh dấu là chưa trả", color = Color.Gray)
+            // If SETTLED
+            if (isCreditor) {
+                // ONLY Creditor can delete settled debt history
+                OutlinedButton(
+                    onClick = { 
+                        viewModel.deleteDebt(debt.documentId)
+                        onNavigateBack()
+                    },
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color.Red),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("XÓA LỊCH SỬ NỢ", fontWeight = FontWeight.Bold)
+                }
+                
+                // Creditor can undo settlement if it was accidental
+                TextButton(
+                    onClick = { 
+                        viewModel.updateDebtStatus(debt.documentId, DebtStatus.PENDING)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Đánh dấu là chưa trả", color = Color.Gray)
+                }
+            } else {
+                // Debtor sees completed status
+                Button(
+                    onClick = { },
+                    enabled = false,
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF388E3C)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("ĐÃ THANH TOÁN", fontWeight = FontWeight.Bold)
+                }
             }
         }
     }

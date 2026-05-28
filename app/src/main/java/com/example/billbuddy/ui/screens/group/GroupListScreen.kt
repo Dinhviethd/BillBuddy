@@ -18,28 +18,42 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.billbuddy.data.model.Group
 import com.example.billbuddy.ui.theme.AppBackground
-
-data class GroupItem(
-    val name: String,
-    val description: String,
-    val memberCount: Int,
-    val totalExpense: String,
-    val iconColor: Color
-)
+import com.example.billbuddy.ui.viewmodel.GroupViewModel
+import com.example.billbuddy.utils.Resource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupListScreen(
+    viewModel: GroupViewModel,
     onNavigateBack: () -> Unit,
-    onNavigateToAddGroup: () -> Unit
+    onNavigateToAddGroup: () -> Unit,
+    onNavigateToGroupDetail: (String) -> Unit
 ) {
-    val groups = listOf(
-        GroupItem("Nhà trọ", "Chi tiêu chung phòng", 4, "2,500,000đ", Color(0xFFBBDEFB)),
-        GroupItem("Đi du lịch Đà Lạt", "Chi phí chuyến đi", 6, "8,400,000đ", Color(0xFFC8E6C9)),
-        GroupItem("Nhóm công ty", "Ăn trưa hàng ngày", 8, "1,200,000đ", Color(0xFFFFE0B2)),
-        GroupItem("Gia đình", "Chi tiêu gia đình", 3, "5,600,000đ", Color(0xFFF8BBD0))
-    )
+    val groupsResource by viewModel.groups.collectAsState()
+    val joinStatus by viewModel.joinGroupStatus.collectAsState()
+    
+    var showJoinDialog by remember { mutableStateOf(false) }
+    var joinGroupName by remember { mutableStateOf("") }
+    
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(joinStatus) {
+        when (joinStatus) {
+            is Resource.Success -> {
+                showJoinDialog = false
+                joinGroupName = ""
+                viewModel.resetStatus()
+                snackbarHostState.showSnackbar("Gia nhập nhóm thành công")
+            }
+            is Resource.Error -> {
+                snackbarHostState.showSnackbar(joinStatus?.message ?: "Lỗi khi gia nhập nhóm")
+                viewModel.resetStatus()
+            }
+            else -> Unit
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -56,8 +70,8 @@ fun GroupListScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More")
+                    IconButton(onClick = { showJoinDialog = true }) {
+                        Icon(Icons.Default.GroupAdd, contentDescription = "Join Group")
                     }
                 }
             )
@@ -72,47 +86,91 @@ fun GroupListScreen(
                 Icon(Icons.Default.Add, contentDescription = "Add", modifier = Modifier.size(28.dp))
             }
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = AppBackground
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Summary Card
-            item {
-                GroupSummaryCard(groupCount = groups.size)
-            }
+        if (showJoinDialog) {
+            AlertDialog(
+                onDismissRequest = { showJoinDialog = false },
+                title = { Text("Gia nhập nhóm") },
+                text = {
+                    Column {
+                        Text("Nhập tên nhóm để gia nhập")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = joinGroupName,
+                            onValueChange = { joinGroupName = it },
+                            placeholder = { Text("Tên nhóm") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { viewModel.joinGroupByName(joinGroupName) },
+                        enabled = joinGroupName.isNotBlank() && joinStatus !is Resource.Loading
+                    ) {
+                        Text("Gia nhập")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showJoinDialog = false }) {
+                        Text("Hủy")
+                    }
+                }
+            )
+        }
 
-            // Section Title
-            item {
-                Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                    Text(
-                        text = "Nhóm của tôi",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                    )
-                    Text(
-                        text = "${groups.size} nhóm",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
-                    )
+        when (val resource = groupsResource) {
+            is Resource.Loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
             }
-
-            // Group Items
-            items(groups) { group ->
-                GroupCard(group)
+            is Resource.Error -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(text = resource.message ?: "Unknown Error", color = Color.Red)
+                }
             }
+            is Resource.Success -> {
+                val groups = resource.data ?: emptyList()
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Section Title
+                    item {
+                        Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                            Text(
+                                text = "Nhóm của tôi",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                            )
+                            Text(
+                                text = "${groups.size} nhóm",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray
+                            )
+                        }
+                    }
 
-            item { Spacer(modifier = Modifier.height(16.dp)) }
+                    // Group Items
+                    items(groups) { group ->
+                        GroupCard(group, onClick = { onNavigateToGroupDetail(group.documentId) })
+                    }
+
+                    item { Spacer(modifier = Modifier.height(16.dp)) }
+                }
+            }
         }
     }
 }
 
 @Composable
 fun GroupSummaryCard(groupCount: Int) {
+// ...
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -163,9 +221,11 @@ fun GroupSummaryCard(groupCount: Int) {
 }
 
 @Composable
-fun GroupCard(group: GroupItem) {
+fun GroupCard(group: Group, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
@@ -179,7 +239,7 @@ fun GroupCard(group: GroupItem) {
             Surface(
                 modifier = Modifier.size(42.dp),
                 shape = RoundedCornerShape(10.dp),
-                color = group.iconColor.copy(alpha = 0.6f)
+                color = Color(0xFFBBDEFB).copy(alpha = 0.6f)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
@@ -215,7 +275,7 @@ fun GroupCard(group: GroupItem) {
                         tint = Color.Gray
                     )
                     Text(
-                        text = "${group.memberCount} thành viên",
+                        text = "${group.memberIds.size} thành viên",
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.Gray
                     )
@@ -225,7 +285,7 @@ fun GroupCard(group: GroupItem) {
             // Total Expense
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = group.totalExpense,
+                    text = "0đ", // TODO: Calculate actual total
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                     color = Color(0xFFD32F2F)
                 )

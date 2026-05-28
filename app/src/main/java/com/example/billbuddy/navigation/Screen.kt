@@ -17,4 +17,10 @@ sealed class Screen(val route: String) {
     }
     object GroupList : Screen("group_list")
     object AddGroup : Screen("add_group")
+    object GroupDetail : Screen("group_detail/{groupId}") {
+        fun createRoute(groupId: String) = "group_detail/$groupId"
+    }
+    object SplitExpense : Screen("split_expense/{expenseId}") {
+        fun createRoute(expenseId: String) = "split_expense/$expenseId"
+    }
 }

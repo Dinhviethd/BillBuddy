@@ -8,6 +8,10 @@ import com.example.billbuddy.data.repo.DebtRepository
 import com.example.billbuddy.data.repo.DebtRepositoryImpl
 import com.example.billbuddy.data.repo.ExpenseRepository
 import com.example.billbuddy.data.repo.ExpenseRepositoryImpl
+import com.example.billbuddy.data.repo.ExpenseSplitRepository
+import com.example.billbuddy.data.repo.ExpenseSplitRepositoryImpl
+import com.example.billbuddy.data.repo.GroupRepository
+import com.example.billbuddy.data.repo.GroupRepositoryImpl
 import com.example.billbuddy.data.repo.UserRepository
 import com.example.billbuddy.data.repo.UserRepositoryImpl
 import dagger.Binds
@@ -49,4 +53,16 @@ abstract class RepositoryModule {
     abstract fun bindCategoryRepository(
         categoryRepositoryImpl: CategoryRepositoryImpl
     ): CategoryRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindGroupRepository(
+        groupRepositoryImpl: GroupRepositoryImpl
+    ): GroupRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindExpenseSplitRepository(
+        expenseSplitRepositoryImpl: ExpenseSplitRepositoryImpl
+    ): ExpenseSplitRepository
 }
